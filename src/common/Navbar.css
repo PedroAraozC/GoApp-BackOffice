@@ -1,0 +1,64 @@
+.appIcon {
+  height: 80px !important;
+  padding: 10px;
+  position: absolute;
+}
+
+.linksSidebar {
+  text-decoration: none;
+  color: #000;
+  margin-top: 10px;
+}
+
+.linksSidebar:hover {
+  color: #000000;
+  /* color: #1f89f6; */
+  text-decoration: underline;
+}
+
+.css-ciy9n4-MuiPaper-root-MuiAppBar-root {
+  background-color: #000000 !important;
+  /* background-color: #1f89f6 !important; */
+}
+
+.css-hip9hq-MuiPaper-root-MuiAppBar-root {
+  background-color: #000000 !important;
+  /* background-color: #1f89f6 !important; */
+}
+
+.logOut {
+  margin-top: 35px;
+  margin-left: -25px;
+}
+
+.footer {
+  font-size: small;
+}
+
+.tituloNav {
+  align-items: center;
+  font-size: xx-large;
+  display: flex;
+  justify-content: center;
+  font-weight: 600;
+  padding: 16px;
+  width: 100%;
+  padding-left: 100px;
+}
+
+@media (max-width: 810px) {
+  .tituloNav {
+    display: none;
+  }
+
+  .appIcon {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .containerNav {
+    padding: 27px;
+    margin: 20px !important;
+    padding-left: 0px !important;
+  }
+}

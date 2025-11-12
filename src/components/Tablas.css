@@ -1,0 +1,90 @@
+    .MuiTablePagination-selectLabel {
+        margin: 0 !important
+    }
+
+    .jWSYe {
+        margin: 0 !important
+    }
+
+    .eye-icon {
+        /* color: #1d7fe2; */
+        cursor: pointer;
+        /* margin-left: 10px; */
+        height: 60% !important;
+        width: max-content !important;
+    }
+
+    .eye-icon:hover {
+        color: #000000;
+        /* color: #F2C947; */
+        /* color: #1863ad; */
+    }
+
+    .taxi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        justify-self: center;
+        padding: 20px !important;
+        /* margin-top: 30px; */
+        margin-top: 0 !important;
+        width: 50%;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .taxi-header-small {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        justify-self: center;
+        padding: 20px !important;
+        /* padding-top: 5px; */
+        /* margin-top: 30px; */
+        width: 90%;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-icon-container {
+        width: 30px;
+        height: 30px;
+        /* color: #1d7fe2; */
+        /* color: #F2C947; */
+        color: #000000;
+        align-self: center;
+        display: flex;
+        /* padding-top: 35px; */
+        padding-right: 10px;
+    }
+
+    .info-icon-container:hover {
+        cursor: pointer;
+        color: #0000008a;
+        /* color: #F2C947; */
+        /* color: #1863ad; */
+
+    }
+
+    .css-1jy569b-MuiFormLabel-root-MuiInputLabel-root.Mui-focused {
+        color: #F2C947 !important;
+    }
+
+    .css-1yk1gt9-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: #F2C947 !important;
+    }
+
+    .css-kk1bwy-MuiButtonBase-root-MuiMenuItem-root.Mui-selected:hover {
+        background-color: #f2ca4794 !important;
+    }
+
+    .css-kk1bwy-MuiButtonBase-root-MuiMenuItem-root.Mui-selected {
+        background-color:
+            #f2ca472d !important;
+    }
+
+    .css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+
+        border-color: #F2C947 !important;
+    }

@@ -1,0 +1,70 @@
+    .MuiTablePagination-selectLabel {
+        margin: 0 !important
+    }
+
+    .jWSYe {
+        margin: 0 !important
+    }
+
+    .eye-icon {
+        /* color: #1d7fe2; */
+        cursor: pointer;
+        /* margin-left: 10px; */
+        height: 60% !important;
+        width: max-content !important;
+    }
+
+    .eye-icon:hover {
+        color: #1863ad;
+    }
+
+    .taxi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        justify-self: center;
+        padding: 20px;
+        padding-top: 5px;
+        margin-top: 30px;
+        width: 50%;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .taxi-header-small {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        justify-self: center;
+        padding: 20px;
+        padding-top: 5px;
+        margin-top: 30px;
+        width: 90%;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-icon-container {
+        width: 30px;
+        height: 30px;
+        color: #F2C947;
+        /* color: #1d7fe2; */
+        align-self: center;
+        display: flex;
+        padding-top: 0px !important;
+        padding-right: 10px;
+    }
+
+    .info-icon-container:hover {
+        cursor: pointer;
+        color: #1863ad;
+    }
+
+    .container-search {
+        width: 90%;
+        display: flex;
+        justify-content: space-between;
+        justify-self: center;
+        align-items: center;
+        margin: 10px;
+    }
