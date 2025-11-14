@@ -11,6 +11,9 @@ import {
   Chip,
   useMediaQuery,
   useTheme,
+  Snackbar,
+  Alert,
+  Slide,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -23,6 +26,11 @@ import "../Tablas.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosTaxi from "../../config/axiosTaxi";
+import ModalCambiarEstado from "./ModalCambiarEstado";
+
+function SlideTransition(props) {
+  return <Slide {...props} direction="up" />;
+}
 
 const DetalleConductor = () => {
   const navigate = useNavigate();
@@ -31,7 +39,27 @@ const DetalleConductor = () => {
   const [conductor, setConductor] = useState(null);
   const [loading, setLoading] = useState(true);
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
+  const [openModalEstado, setOpenModalEstado] = useState(false);
 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const handleSuccess = (mensaje) => {
+    setSnackbar({
+      open: true,
+      message: mensaje,
+      severity: "success",
+    });
+    setOpenModalEstado(false);
+    obtenerDetalle(); // refresca los datos
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
   const obtenerDetalle = async () => {
     try {
       const { data } = await axiosTaxi.get(`/conductores/obtenerDetalle/${id}`);
@@ -243,7 +271,15 @@ const DetalleConductor = () => {
                 </Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Typography variant="caption" color="text.secondary">
+                  Vencimiento Carnet
+                </Typography>
+                <Typography variant="body1" fontWeight={500}>
+                  {formatearFecha(conductor?.vencimiento_carnet)}
+                </Typography>
+              </Grid>
+              <Grid container spacing={2} pt={2}>
                 <Grid item xs={6}>
                   <Typography variant="caption" color="text.secondary">
                     Licencia
@@ -261,12 +297,27 @@ const DetalleConductor = () => {
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="caption" color="text.secondary">
+                  {/* <Typography variant="body2" color="text.secondary">
                     Seguro
-                  </Typography>
-                  <Typography variant="body1" fontWeight={500}>
-                    {conductor?.seguro || "-"}
-                  </Typography>
+                  </Typography> */}
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary">
+                        Póliza
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {conductor?.poliza_seguro || "-"}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary">
+                        Vencimiento Seguro
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {conductor?.vencimiento_seguro || "-"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
             </CardContent>
@@ -523,9 +574,33 @@ const DetalleConductor = () => {
             boxShadow: "0px 3px 8px rgba(0,0,0,0.3)",
             "&:hover": { backgroundColor: "#000000d1" },
           }}
+          onClick={() => setOpenModalEstado(true)}
         >
           CAMBIAR ESTADO
         </Button>
+        <ModalCambiarEstado
+          open={openModalEstado}
+          onClose={() => setOpenModalEstado(false)}
+          conductor={conductor}
+          onSuccess={handleSuccess}
+        />
+        {/* ✅ Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          onClose={handleCloseSnackbar}
+          autoHideDuration={4000}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          TransitionComponent={SlideTransition}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            variant="filled"
+            sx={{ width: "100%", fontWeight: 600 }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );

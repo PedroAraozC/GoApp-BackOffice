@@ -83,20 +83,23 @@ const TablaValidacionConductores = () => {
     {
       field: "nombre_usuario",
       headerName: "Nombre del Chofer",
-      flex: 1,
       headerAlign: "center",
+      width: 600,
       align: "left",
       renderCell: (params) => (
         <Typography sx={{ pl: 2, fontWeight: 500 }}>
-          {params.row.nombre_usuario || "Sin nombre"}
+          {`
+          ${params.row.apellido_usuario || ""}, ${
+            params.row.nombre_usuario || ""
+          }`.trim() || "Sin nombre"}
         </Typography>
       ),
     },
     {
       field: "fecha_solicitud",
       headerName: "Fecha de Solicitud",
-      flex: 1,
       headerAlign: "center",
+      width: 200,
       align: "center",
       renderCell: (params) => {
         if (!params.row.fecha_validacion) return "-";
@@ -107,7 +110,7 @@ const TablaValidacionConductores = () => {
     {
       field: "nombre_estado",
       headerName: "Estado",
-      flex: 1,
+      width: 200,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
@@ -126,7 +129,7 @@ const TablaValidacionConductores = () => {
     {
       field: "observaciones",
       headerName: "Observaciones",
-      flex: 1,
+      width: 650,
       headerAlign: "center",
       align: "left",
       renderCell: (params) => params.row.observaciones || "-",
@@ -214,6 +217,8 @@ const TablaValidacionConductores = () => {
         initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
         localeText={esES.components.MuiDataGrid.defaultProps.localeText}
         sx={{
+          justifySelf: "center",
+          width: "85%",
           backgroundColor: "#fff",
           borderRadius: 2,
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
