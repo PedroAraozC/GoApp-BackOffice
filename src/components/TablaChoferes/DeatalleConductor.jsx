@@ -297,7 +297,7 @@ const DetalleConductor = () => {
                     Marca
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {conductor?.marca || "-"}
+                    {conductor?.marca_vehiculo || "-"}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -305,7 +305,7 @@ const DetalleConductor = () => {
                     Modelo
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {conductor?.modelo || "-"}
+                    {conductor?.modelo_vehiculo || "-"}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -313,7 +313,7 @@ const DetalleConductor = () => {
                     Año
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {conductor?.año || "-"}
+                    {conductor?.año_vehiculo || "-"}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -321,7 +321,7 @@ const DetalleConductor = () => {
                     Patente
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {conductor?.patente || "-"}
+                    {conductor?.matricula || "-"}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -334,10 +334,18 @@ const DetalleConductor = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="caption" color="text.secondary">
+                    N° Chasis
+                  </Typography>
+                  <Typography variant="body1" fontWeight={500}>
+                    {conductor?.nro_chasis || "-"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="caption" color="text.secondary">
                     Tipo de Vehículo
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {conductor?.tipo_vehiculo || "-"}
+                    {conductor?.nombre_tipo || "-"}
                   </Typography>
                 </Grid>
               </Grid>
