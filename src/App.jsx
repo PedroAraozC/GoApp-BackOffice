@@ -1,8 +1,6 @@
 import { Routes, Route, HashRouter } from "react-router-dom";
 import { useState } from "react";
 import Layout from "./common/Layout";
-import PrivateRoute from "./Routes/PrivateRoute";
-import PublicRoute from "./Routes/PublicRoute";
 import Home from "./routes/Home/Home";
 import TablaValidacionConductores from "./components/TablaChoferes/TablaChoferes";
 import TablaUsuarios from "./components/TablaUsuarios/TablaUsuarios";
