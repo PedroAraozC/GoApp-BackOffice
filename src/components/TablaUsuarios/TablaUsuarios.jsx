@@ -1,5 +1,4 @@
-import { DataGrid, renderActionsCell } from "@mui/x-data-grid";
-import { esES } from "@mui/x-data-grid/locales";
+import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -19,6 +18,7 @@ import "./Usuario.css";
 import "../Tablas.css";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { LocalPrintshop as LocalPrintshopIcon } from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/Add";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import app_icon from "../../assets/app_icon.png";
@@ -28,8 +28,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import IconButton from "@mui/material/IconButton";
 import ModalInfo from "../ModaInfo/ModalInfo";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
-import { width } from "@fortawesome/free-solid-svg-icons/fa0";
 import ModalUsuario from "./ModalUsuario";
+import ModalAltaUsuario from "./ModalAltaUsuario.jsx";
+import { esES } from "@mui/x-data-grid/locales";
 
 const TablaUsuarios = () => {
   const theme = useTheme();
@@ -46,7 +47,7 @@ const TablaUsuarios = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("warning");
-
+  const [openModalAgregar, setOpenModalAgregar] = useState(false);
   const handleCloseSnackbar = () => setOpenSnackbar(false);
 
   const showSnackbar = (message, severity = "warning") => {
@@ -85,11 +86,16 @@ const TablaUsuarios = () => {
     const lowerSearch = searchText.toLowerCase();
     const filtered = usuarios.filter((row) =>
       Object.values(row).some(
-        (value) => value && value.toString().toLowerCase().includes(lowerSearch)
-      )
+        (value) =>
+          value && value.toString().toLowerCase().includes(lowerSearch),
+      ),
     );
     setFilteredUsuarios(filtered);
   }, [searchText, usuarios]);
+
+  const AgregarUsuario = async () => {
+    setOpenModalAgregar(true);
+  };
 
   const imprimirTabla = () => {
     const doc = new jsPDF({
@@ -350,6 +356,20 @@ const TablaUsuarios = () => {
             />
             <Button
               variant="contained"
+              onClick={AgregarUsuario}
+              sx={{
+                borderRadius: 3,
+                // backgroundColor: "#1976d2",
+                backgroundColor: "#000000",
+                color: "#fff",
+                // "&:hover": { backgroundColor: "#1565c0" },
+                "&:hover": { backgroundColor: "#0000008a" },
+              }}
+            >
+              <AddIcon sx={{ fontSize: 28 }} />
+            </Button>
+            <Button
+              variant="contained"
               onClick={imprimirTabla}
               sx={{
                 borderRadius: 3,
@@ -429,7 +449,7 @@ const TablaUsuarios = () => {
                   color: "white",
                 },
               }}
-              localeText={esES.components.MuiDataGrid.defaultProps.localeText}
+              localeText={esES.localeText}
             />
           </Box>
         </Box>
@@ -454,7 +474,7 @@ const TablaUsuarios = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-      <ModalInfo open={modalInfo} setOpen={setModalInfo} />;
+      <ModalInfo open={modalInfo} setOpen={setModalInfo} />
       <ModalUsuario
         open={modalEditar}
         onClose={() => setModalEditar(false)}
@@ -464,6 +484,11 @@ const TablaUsuarios = () => {
           setModalEditar(false);
           obtenerUsuarios(); // refresca la tabla
         }}
+      />
+      <ModalAltaUsuario
+        open={openModalAgregar}
+        onClose={() => setOpenModalAgregar(false)}
+        onSubmit={() => obtenerUsuarios()}
       />
     </Box>
   );

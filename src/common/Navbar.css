@@ -6,12 +6,12 @@
 
 .linksSidebar {
   text-decoration: none;
-  color: #000;
+  color: #000 !important;
   margin-top: 10px;
 }
 
 .linksSidebar:hover {
-  color: #000000;
+  color: #000000 !important;
   /* color: #1f89f6; */
   text-decoration: underline;
 }
@@ -46,6 +46,10 @@
   padding-left: 100px;
 }
 
+.css-1x7skt0{
+  background-color: #000000 !important;
+  /* background-color: #1f89f6 !important; */
+}
 @media (max-width: 810px) {
   .tituloNav {
     display: none;

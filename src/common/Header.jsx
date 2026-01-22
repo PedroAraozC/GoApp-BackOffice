@@ -62,19 +62,19 @@ const Header = () => {
   };
 
   const navLinks = [
-    { name: "Inicio", path: "/" },
+    { name: "Inicio", path: "/BackOffice/" },
     { name: "Choferes", path: "#/validacion-conductores" },
     { name: "Usuarios", path: "#/Usuarios" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
 
   const navLinksProv = [
-    { name: "Inicio", path: "/" },
+    { name: "Inicio", path: "/BackOffice/" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
 
   const navLinksAdmin = [
-    { name: "Inicio", path: "/" },
+    { name: "Inicio", path: "/BackOffice/" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
 
