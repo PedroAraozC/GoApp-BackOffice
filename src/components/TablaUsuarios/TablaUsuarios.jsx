@@ -18,7 +18,7 @@ import "./Usuario.css";
 import "../Tablas.css";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { LocalPrintshop as LocalPrintshopIcon } from "@mui/icons-material";
-import AddIcon from "@mui/icons-material/Add";
+import { Add as AddIcon } from "@mui/icons-material";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import app_icon from "../../assets/app_icon.png";
@@ -29,7 +29,7 @@ import IconButton from "@mui/material/IconButton";
 import ModalInfo from "../ModaInfo/ModalInfo";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import ModalUsuario from "./ModalUsuario";
-import ModalAltaUsuario from "./ModalAltaUsuario.jsx";
+import ModalAltaUsuario from "./ModalAltaUsuarioStepper.jsx";
 import { esES } from "@mui/x-data-grid/locales";
 
 const TablaUsuarios = () => {
@@ -485,10 +485,13 @@ const TablaUsuarios = () => {
           obtenerUsuarios(); // refresca la tabla
         }}
       />
-      <ModalAltaUsuario
+      <ModalAltaUsuarioStepper
         open={openModalAgregar}
         onClose={() => setOpenModalAgregar(false)}
-        onSubmit={() => obtenerUsuarios()}
+        onSuccess={() => {
+          showSnackbar("Usuario creado correctamente", "success");
+          obtenerUsuarios();
+        }}
       />
     </Box>
   );
