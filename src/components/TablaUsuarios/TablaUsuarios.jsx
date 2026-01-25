@@ -29,7 +29,7 @@ import IconButton from "@mui/material/IconButton";
 import ModalInfo from "../ModaInfo/ModalInfo";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import ModalUsuario from "./ModalUsuario";
-import ModalAltaUsuario from "./ModalAltaUsuarioStepper.jsx";
+import ModalAltaUsuarioStepper from "./ModalAltaUsuarioStepper.jsx";
 import { esES } from "@mui/x-data-grid/locales";
 
 const TablaUsuarios = () => {
