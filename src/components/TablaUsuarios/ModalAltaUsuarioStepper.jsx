@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import axiosTaxi from "../../config/axiosTaxi";
 import { LinearProgress } from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 
 const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
   const [activeStep, setActiveStep] = useState(0);
@@ -36,6 +37,24 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
     password: "",
     id_rol: "",
   });
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "error", // error | success | warning | info
+  });
+
+  const showSnackbar = (message, severity = "error") => {
+    setSnackbar({
+      open: true,
+      message,
+      severity,
+    });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   const [Conductor, setConductor] = useState({
     licencia: "",
@@ -92,6 +111,8 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
   const [idUsuario, setIdUsuario] = useState(null);
   const [idConductor, setIdConductor] = useState(null);
   const [roles, setRoles] = useState([]);
+  const [chofer, setChofer] = useState([]);
+  const [erroresUsuario, setErroresUsuario] = useState([]);
   const [usuarioCreado, setUsuarioCreado] = useState(false);
 
   const steps =
@@ -133,7 +154,8 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
     const idRol = obtenerIdRol();
 
     if (!idRol) {
-      alert("No se pudo determinar el rol del usuario");
+      showSnackbar("No se pudo determinar el rol del usuario", "warning");
+
       throw new Error("Rol no encontrado");
     }
 
@@ -148,7 +170,6 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
       password: usuario.password,
       id_rol: idRol,
     };
-
     const res = await axiosTaxi.post("/usuarios/crearUsuario", payload);
     setIdUsuario(res.data.userId);
     return res.data.userId;
@@ -169,7 +190,9 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
       setGeneros(data?.result || []);
     } catch (error) {
       console.error("Error al obtener géneros:", error);
-      alert("No se pudieron cargar los géneros");
+      const msg =
+        error?.response?.data?.message || "Error al obtener el genero ";
+      showSnackbar(msg, "error");
     }
   };
   useEffect(() => {
@@ -188,6 +211,8 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
       });
       setChofer({});
       setImagenes({});
+      obtenerGeneros();
+      obtenerRoles();
       setUsuarioCreado(false);
     }
   }, [open]);
@@ -198,7 +223,8 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
       setRoles(data?.result || []);
     } catch (error) {
       console.error("Error al obtener roles:", error);
-      alert("No se pudieron cargar los roles");
+      const msg = error?.response?.data?.message || "Error al obtener roles";
+      showSnackbar(msg, "error");
     }
   };
 
@@ -248,12 +274,19 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
           !email ||
           !password
         ) {
-          alert("Completá todos los datos personales obligatorios");
+          showSnackbar(
+            "Completá todos los datos personales obligatorios",
+            "warning",
+          );
+
           return;
         }
 
         const esValido = validarUsuario();
-        if (!esValido) return;
+        if (!esValido) {
+          showSnackbar("Hay errores en el formulario", "error");
+          return;
+        }
 
         setActiveStep((prev) => prev + 1);
         return;
@@ -288,11 +321,13 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
         const faltantes = faltanDatosChofer();
 
         if (faltantes.length > 0) {
-          alert(
+          showSnackbar(
             `Para continuar, el conductor debe completar TODOS los datos.\n\nFaltan:\n- ${faltantes.join(
               "\n- ",
             )}`,
+            "warning",
           );
+
           return;
         }
 
@@ -308,11 +343,16 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
         const faltantes = faltanImagenesObligatorias();
 
         if (faltantes.length > 0) {
-          alert(`Faltan imágenes obligatorias: ${faltantes.join(", ")}`);
+          showSnackbar(
+            `Faltan imágenes obligatorias: ${faltantes.join(", ")}`,
+            "warning",
+          );
+
           return;
         }
 
         await subirImagenes();
+        showSnackbar("Conductor creado correctamente", "success");
         onSuccess?.();
         onClose();
         return;
@@ -322,9 +362,14 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
       setActiveStep((prev) => prev + 1);
     } catch (error) {
       console.error(error);
-      alert("Error al crear el usuario / Conductor");
+
+      const backendMessage =
+        error?.response?.data?.message ||
+        "Error al crear el usuario / conductor";
+
+      showSnackbar(backendMessage, "error");
     } finally {
-      setLoading(false);
+      setLoading(false); // 🔥 SIEMPRE vuelve a habilitar el botón
     }
   };
 
@@ -442,28 +487,38 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               label="Nombre"
               name="nombre"
               onChange={handleUsuarioChange}
+              value={usuario.nombre}
             />
             <TextField
               label="Apellido"
               name="apellido"
               onChange={handleUsuarioChange}
+              value={usuario.apellido}
             />
-            <TextField label="DNI" name="dni" onChange={handleUsuarioChange} />
+            <TextField
+              label="DNI"
+              name="dni"
+              onChange={handleUsuarioChange}
+              value={usuario.dni}
+            />
             <TextField
               label="Teléfono"
               name="telefono"
               onChange={handleUsuarioChange}
+              value={usuario.telefono}
             />
             <TextField
               label="Email"
               name="email"
               onChange={handleUsuarioChange}
+              value={usuario.email}
             />
             <TextField
               label="Contraseña"
               type="password"
               name="password"
               onChange={handleUsuarioChange}
+              value={usuario.password}
             />
             <TextField
               label="Fecha de nacimiento"
@@ -682,7 +737,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} maxWidth="md" fullWidth>
       <DialogTitle>Alta de Usuario</DialogTitle>
 
       <DialogContent>
@@ -707,6 +762,20 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
           {activeStep === steps.length - 1 ? "Finalizar" : "Siguiente"}
         </Button>
       </DialogActions>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
