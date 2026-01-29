@@ -7,6 +7,10 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosTaxi from "../../config/axiosTaxi.js";
@@ -19,7 +23,8 @@ const CompletarConductor = () => {
   const [snackbar, setSnackbar] = useState(null);
   const [idConductor, setIdConductor] = useState(null);
   const isEdit = !!idConductor;
-
+  const puedeSubirArchivos = !!idConductor;
+  const [tipoVehiculos, setTipoVehiculos] = useState([]);
   const [imagenes, setImagenes] = useState({
     perfil: null,
     dni_frente: null,
@@ -44,11 +49,22 @@ const CompletarConductor = () => {
     tipoVehiculo: "",
   });
 
+  const formularioBloqueado = puedeSubirArchivos;
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const obtenerTipoVehiculos = async () => {
+    try {
+      const { data } = await axiosTaxi.get("/tipoVehiculo/obtener");
+      setTipoVehiculos(data.result || []);
+    } catch (error) {
+      console.error("Error cargando tipos de vehículo", error);
+    }
+  };
   useEffect(() => {
+    obtenerTipoVehiculos();
     const cargarConductor = async () => {
       try {
         const { data } = await axiosTaxi.get(
@@ -80,32 +96,6 @@ const CompletarConductor = () => {
 
     cargarConductor();
   }, [id_usuario]);
-
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-
-      const { data } = await axiosTaxi.post("/conductores/crearChofer", {
-        id_usuario,
-        ...form,
-      });
-
-      setIdConductor(data.id_conductor);
-
-      setSnackbar({
-        type: "success",
-        message: "Datos del conductor guardados. Ahora subí los archivos.",
-      });
-    } catch (error) {
-      setSnackbar({
-        type: "error",
-        message:
-          error?.response?.data?.message || "Error al crear el conductor",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const subirImagenes = async () => {
     try {
@@ -160,13 +150,19 @@ const CompletarConductor = () => {
       </Typography>
 
       <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
-        <TextField label="Licencia" name="licencia" onChange={handleChange} />
+        <TextField
+          label="Licencia"
+          name="licencia"
+          onChange={handleChange}
+          disabled={formularioBloqueado}
+        />
         <TextField
           label="Vencimiento Licencia"
           type="date"
           name="vencimientoLicencia"
           InputLabelProps={{ shrink: true }}
           onChange={handleChange}
+          disabled={formularioBloqueado}
         />
         <TextField
           label="Vencimiento Carnet"
@@ -174,41 +170,87 @@ const CompletarConductor = () => {
           name="vencimientoCarnet"
           InputLabelProps={{ shrink: true }}
           onChange={handleChange}
+          disabled={formularioBloqueado}
         />
-        <TextField label="Póliza" name="poliza" onChange={handleChange} />
+        <TextField
+          label="Póliza"
+          name="poliza"
+          onChange={handleChange}
+          disabled={formularioBloqueado}
+        />
         <TextField
           label="Vencimiento Seguro"
           type="date"
           name="vencimientoSeguro"
           InputLabelProps={{ shrink: true }}
           onChange={handleChange}
+          disabled={formularioBloqueado}
         />
-        <TextField label="Patente" name="patente" onChange={handleChange} />
-        <TextField label="Marca" name="marca" onChange={handleChange} />
-        <TextField label="Modelo" name="modelo" onChange={handleChange} />
+        <TextField
+          label="Patente"
+          name="patente"
+          onChange={handleChange}
+          disabled={formularioBloqueado}
+        />
+        <TextField
+          label="Marca"
+          name="marca"
+          onChange={handleChange}
+          disabled={formularioBloqueado}
+        />
+        <TextField
+          label="Modelo"
+          name="modelo"
+          onChange={handleChange}
+          disabled={formularioBloqueado}
+        />
         <TextField
           label="Año"
           type="number"
           name="anio"
           onChange={handleChange}
+          disabled={formularioBloqueado}
         />
         <TextField
           label="Número Motor"
           name="numeroMotor"
           onChange={handleChange}
+          disabled={formularioBloqueado}
         />
         <TextField
           label="Número Chasis"
           name="numeroChassis"
           onChange={handleChange}
+          disabled={formularioBloqueado}
         />
+        <FormControl fullWidth>
+          <InputLabel id="tipo-vehiculo-label">Tipo de Vehículo</InputLabel>
+
+          <Select
+            labelId="tipo-vehiculo-label"
+            label="Tipo de Vehículo"
+            name="tipoVehiculo"
+            value={form.tipoVehiculo}
+            onChange={handleChange}
+            disabled={formularioBloqueado}
+          >
+            {tipoVehiculos.map((tipo) => (
+              <MenuItem
+                key={tipo.id_tipo_vehiculo}
+                value={tipo.id_tipo_vehiculo}
+              >
+                {tipo.nombre_tipo_vehiculo}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
 
       <Box sx={{ mt: 3 }}>
         <Button
           variant="contained"
           onClick={isEdit ? actualizar : crear}
-          disabled={loading}
+          disabled={loading || formularioBloqueado}
         >
           {loading ? (
             <CircularProgress size={24} />
@@ -219,35 +261,51 @@ const CompletarConductor = () => {
           )}
         </Button>
       </Box>
-      {idConductor && (
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Documentación del conductor
-          </Typography>
+      <Box sx={{ mt: 4, opacity: puedeSubirArchivos ? 1 : 0.5 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Documentación del conductor
+        </Typography>
 
-          <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={2}>
-            {Object.keys(imagenes).map((key) => (
-              <Button key={key} variant="outlined" component="label">
-                Subir {key}
-                <input
-                  hidden
-                  type="file"
-                  onChange={(e) =>
-                    setImagenes({
-                      ...imagenes,
-                      [key]: e.target.files[0],
-                    })
-                  }
-                />
-              </Button>
-            ))}
-          </Box>
+        {!puedeSubirArchivos && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Primero debés guardar los datos del conductor para poder subir la
+            documentación.
+          </Alert>
+        )}
 
-          <Button sx={{ mt: 3 }} variant="contained" onClick={subirImagenes}>
-            Subir archivos
-          </Button>
+        <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={2}>
+          {Object.keys(imagenes).map((key) => (
+            <Button
+              key={key}
+              variant="outlined"
+              component="label"
+              disabled={!puedeSubirArchivos}
+            >
+              Subir {key}
+              <input
+                hidden
+                type="file"
+                disabled={!puedeSubirArchivos}
+                onChange={(e) =>
+                  setImagenes({
+                    ...imagenes,
+                    [key]: e.target.files[0],
+                  })
+                }
+              />
+            </Button>
+          ))}
         </Box>
-      )}
+
+        <Button
+          sx={{ mt: 3 }}
+          variant="contained"
+          disabled={!puedeSubirArchivos}
+          onClick={subirImagenes}
+        >
+          Subir archivos
+        </Button>
+      </Box>
 
       <Snackbar
         open={!!snackbar}
