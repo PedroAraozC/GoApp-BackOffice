@@ -154,7 +154,9 @@ const CompletarConductor = () => {
           label="Licencia"
           name="licencia"
           onChange={handleChange}
+          value={form.licencia}
           disabled={formularioBloqueado}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="Vencimiento Licencia"
@@ -162,6 +164,7 @@ const CompletarConductor = () => {
           name="vencimientoLicencia"
           InputLabelProps={{ shrink: true }}
           onChange={handleChange}
+          value={form.vencimientoLicencia}
           disabled={formularioBloqueado}
         />
         <TextField
@@ -170,13 +173,16 @@ const CompletarConductor = () => {
           name="vencimientoCarnet"
           InputLabelProps={{ shrink: true }}
           onChange={handleChange}
+          value={form.vencimientoCarnet}
           disabled={formularioBloqueado}
         />
         <TextField
           label="Póliza"
           name="poliza"
           onChange={handleChange}
+          value={form.poliza}
           disabled={formularioBloqueado}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="Vencimiento Seguro"
@@ -184,43 +190,56 @@ const CompletarConductor = () => {
           name="vencimientoSeguro"
           InputLabelProps={{ shrink: true }}
           onChange={handleChange}
+          value={form.vencimientoSeguro}
           disabled={formularioBloqueado}
         />
         <TextField
           label="Patente"
           name="patente"
           onChange={handleChange}
+          value={form.patente}
           disabled={formularioBloqueado}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="Marca"
           name="marca"
           onChange={handleChange}
+          value={form.marca}
           disabled={formularioBloqueado}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="Modelo"
           name="modelo"
           onChange={handleChange}
+          value={form.modelo}
           disabled={formularioBloqueado}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="Año"
           type="number"
           name="anio"
           onChange={handleChange}
+          value={form.anio}
           disabled={formularioBloqueado}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="Número Motor"
           name="numeroMotor"
           onChange={handleChange}
+          value={form.numeroMotor}
+          InputLabelProps={{ shrink: true }}
           disabled={formularioBloqueado}
         />
         <TextField
           label="Número Chasis"
           name="numeroChassis"
           onChange={handleChange}
+          value={form.numeroChassis}
+          InputLabelProps={{ shrink: true }}
           disabled={formularioBloqueado}
         />
         <FormControl fullWidth>
@@ -231,6 +250,7 @@ const CompletarConductor = () => {
             label="Tipo de Vehículo"
             name="tipoVehiculo"
             value={form.tipoVehiculo}
+            InputLabelProps={{ shrink: true }}
             onChange={handleChange}
             disabled={formularioBloqueado}
           >
