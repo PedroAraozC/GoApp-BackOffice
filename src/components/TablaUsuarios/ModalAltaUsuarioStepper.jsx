@@ -14,17 +14,32 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Snackbar,
+  Alert,
+  LinearProgress,
 } from "@mui/material";
 import axiosTaxi from "../../config/axiosTaxi";
-import { LinearProgress } from "@mui/material";
-import { Snackbar, Alert } from "@mui/material";
 
+/* =========================
+   CONSTANTES
+========================= */
+const TIPO_USUARIO = {
+  USUARIO: "usuario",
+  CONDUCTOR: "conductor",
+};
+
+/* =========================
+   COMPONENTE
+========================= */
 const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [tipoUsuario, setTipoUsuario] = useState("Usuario");
+  const [tipoUsuario, setTipoUsuario] = useState(TIPO_USUARIO.USUARIO);
+
   const [generos, setGeneros] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [tipoVehiculos, setTipoVehiculos] = useState([]);
 
   const [usuario, setUsuario] = useState({
     nombre: "",
@@ -35,28 +50,9 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
     telefono: "",
     email: "",
     password: "",
-    id_rol: "",
   });
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "error", // error | success | warning | info
-  });
-
-  const showSnackbar = (message, severity = "error") => {
-    setSnackbar({
-      open: true,
-      message,
-      severity,
-    });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
-
-  const [Conductor, setConductor] = useState({
+  const [conductor, setConductor] = useState({
     licencia: "",
     vencimientoLicencia: "",
     vencimientoCarnet: "",
@@ -71,21 +67,6 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
     tipoVehiculo: "",
   });
 
-  const camposChoferObligatorios = [
-    "licencia",
-    "vencimientoLicencia",
-    "vencimientoCarnet",
-    "poliza",
-    "vencimientoSeguro",
-    "numeroMotor",
-    "numeroChassis",
-    "patente",
-    "marca",
-    "modelo",
-    "anio",
-    "tipoVehiculo",
-  ];
-
   const [imagenes, setImagenes] = useState({
     perfil: null,
     dni_frente: null,
@@ -93,73 +74,125 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
     tarjeta_verde: null,
     seguro: null,
     vehiculo_frente: null,
-    vehiculo_lado_izq: null,
-    vehiculo_lado_der: null,
   });
+
   const [progreso, setProgreso] = useState({});
-
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    if (!files || !files[0]) return;
-
-    setImagenes((prev) => ({
-      ...prev,
-      [name]: files[0],
-    }));
-  };
-
   const [idUsuario, setIdUsuario] = useState(null);
   const [idConductor, setIdConductor] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [chofer, setChofer] = useState([]);
-  const [erroresUsuario, setErroresUsuario] = useState([]);
   const [usuarioCreado, setUsuarioCreado] = useState(false);
 
+  /* =========================
+     SNACKBAR
+  ========================= */
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "error",
+  });
+
+  const showSnackbar = (message, severity = "error") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
+  /* =========================
+     STEPS
+  ========================= */
   const steps =
-    tipoUsuario === "Conductor"
-      ? ["Datos personales", "Confirmar", "Datos de Conductor", "Fotos"]
+    tipoUsuario === TIPO_USUARIO.CONDUCTOR
+      ? ["Datos personales", "Confirmar", "Datos del conductor", "Fotos"]
       : ["Datos personales", "Confirmar"];
 
+  /* =========================
+     HANDLERS
+  ========================= */
   const handleUsuarioChange = (e) => {
     const { name, value } = e.target;
-    setUsuario({ ...usuario, [name]: value });
+    setUsuario((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleConductorChange = (e) => {
     const { name, value } = e.target;
-    setConductor({ ...Conductor, [name]: value });
+    setConductor((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validarUsuario = () => {
-    const errores = {};
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (!files?.[0]) return;
+    setImagenes((prev) => ({ ...prev, [name]: files[0] }));
+  };
 
-    if (!usuario.nombre.trim()) errores.nombre = "Nombre requerido";
-    if (!usuario.apellido.trim()) errores.apellido = "Apellido requerido";
-    if (!usuario.dni.trim()) errores.dni = "DNI requerido";
-    if (!usuario.telefono.trim()) errores.telefono = "Teléfono requerido";
-    if (!usuario.email.trim()) errores.email = "Email requerido";
-    if (!usuario.password.trim()) errores.password = "Contraseña requerida";
-
-    // ejemplo simple de email
-    if (usuario.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usuario.email)) {
-      errores.email = "Email inválido";
+  const handleCancelar = async () => {
+    if (usuarioCreado && idUsuario) {
+      try {
+        await axiosTaxi.delete(`/usuarios/rollback/${idUsuario}`);
+      } catch (e) {
+        console.error("Error rollback:", e);
+      }
     }
 
-    setErroresUsuario(errores);
+    onClose();
+  };
 
-    return Object.keys(errores).length === 0;
+  /* =========================
+     VALIDACIONES
+  ========================= */
+  const validarUsuario = () => {
+    const campos = [
+      "nombre",
+      "apellido",
+      "dni",
+      "fecha_nacimiento",
+      "id_genero",
+      "email",
+      "password",
+    ];
+    return campos.every((c) => usuario[c]?.toString().trim());
+  };
+
+  const camposChoferObligatorios = Object.keys(conductor);
+
+  const faltanDatosChofer = () =>
+    camposChoferObligatorios.filter((c) => !conductor[c]?.toString().trim());
+
+  const imagenesObligatorias = ["perfil", "dni_frente", "dni_dorso", "seguro"];
+
+  const faltanImagenesObligatorias = () =>
+    imagenesObligatorias.filter((i) => !imagenes[i]);
+
+  /* =========================
+     API
+  ========================= */
+  const obtenerGeneros = async () => {
+    const { data } = await axiosTaxi.get("/generos/obtenerGenero");
+    setGeneros(data?.result || []);
+  };
+
+  const obtenerRoles = async () => {
+    const { data } = await axiosTaxi.get("/roles/obtenerRol");
+    setRoles(data?.result || []);
+  };
+
+  const obtenerTipoVehiculos = async () => {
+    const { data } = await axiosTaxi.get("/tipoVehiculo/obtener");
+    setTipoVehiculos(data?.result || []);
+  };
+
+  const rolesPermitidos = roles.filter((r) =>
+    ["usuario", "conductor"].includes(r.nombre_rol.toLowerCase()),
+  );
+
+  const obtenerIdRol = () => {
+    const nombre =
+      tipoUsuario === TIPO_USUARIO.CONDUCTOR ? "conductor" : "usuario";
+    return roles.find((r) => r.nombre_rol.toLowerCase() === nombre)?.id_rol;
   };
 
   const crearUsuario = async () => {
-    const idRol = obtenerIdRol();
-
-    if (!idRol) {
-      showSnackbar("No se pudo determinar el rol del usuario", "warning");
-
-      throw new Error("Rol no encontrado");
-    }
-
-    const payload = {
+    const res = await axiosTaxi.post("/usuarios/crearUsuario", {
       nombre_usuario: usuario.nombre,
       apellido_usuario: usuario.apellido,
       dni: usuario.dni,
@@ -168,213 +201,22 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
       telefono_usuario: usuario.telefono,
       email_usuario: usuario.email,
       password: usuario.password,
-      id_rol: idRol,
-    };
-    const res = await axiosTaxi.post("/usuarios/crearUsuario", payload);
+      id_rol: obtenerIdRol(),
+    });
+
     setIdUsuario(res.data.userId);
+    setUsuarioCreado(true);
     return res.data.userId;
   };
 
   const crearConductor = async (userId) => {
-    const payload = {
+    console.log(conductor);
+    const res = await axiosTaxi.post("/conductores/crearChofer", {
       id_usuario: userId,
-      ...Conductor,
-    };
-
-    const res = await axiosTaxi.post("/conductores/crearConductor", payload);
-    setIdConductor(res.data.id_conductor);
-  };
-  const obtenerGeneros = async () => {
-    try {
-      const { data } = await axiosTaxi.get("/generos/obtenerGenero");
-      setGeneros(data?.result || []);
-    } catch (error) {
-      console.error("Error al obtener géneros:", error);
-      const msg =
-        error?.response?.data?.message || "Error al obtener el genero ";
-      showSnackbar(msg, "error");
-    }
-  };
-  useEffect(() => {
-    if (!open) {
-      setActiveStep(0);
-      setUsuario({
-        nombre: "",
-        apellido: "",
-        dni: "",
-        telefono: "",
-        email: "",
-        password: "",
-        fechaNacimiento: "",
-        id_genero: "",
-        id_rol: "",
-      });
-      setChofer({});
-      setImagenes({});
-      obtenerGeneros();
-      obtenerRoles();
-      setUsuarioCreado(false);
-    }
-  }, [open]);
-
-  const obtenerRoles = async () => {
-    try {
-      const { data } = await axiosTaxi.get("/roles/obtenerRol");
-      setRoles(data?.result || []);
-    } catch (error) {
-      console.error("Error al obtener roles:", error);
-      const msg = error?.response?.data?.message || "Error al obtener roles";
-      showSnackbar(msg, "error");
-    }
-  };
-
-  const obtenerIdRol = () => {
-    if (!roles.length) return null;
-
-    const nombreBuscado = tipoUsuario === "conductor" ? "conductor" : "usuario";
-
-    const rol = roles.find((r) => r.nombre_rol.toLowerCase() === nombreBuscado);
-
-    return rol?.id_rol || null;
-  };
-
-  const faltanDatosChofer = () => {
-    return camposChoferObligatorios.filter((campo) => {
-      const valor = chofer[campo];
-      return (
-        valor === undefined || valor === null || valor.toString().trim() === ""
-      );
+      ...conductor,
     });
-  };
-
-  const handleNext = async () => {
-    try {
-      setLoading(true);
-
-      // =========================
-      // PASO 0 → DATOS PERSONALES
-      // =========================
-      if (activeStep === 0) {
-        const {
-          nombre,
-          apellido,
-          dni,
-          fecha_nacimiento,
-          id_genero,
-          email,
-          password,
-        } = usuario;
-
-        if (
-          !nombre ||
-          !apellido ||
-          !dni ||
-          !fecha_nacimiento ||
-          !id_genero ||
-          !email ||
-          !password
-        ) {
-          showSnackbar(
-            "Completá todos los datos personales obligatorios",
-            "warning",
-          );
-
-          return;
-        }
-
-        const esValido = validarUsuario();
-        if (!esValido) {
-          showSnackbar("Hay errores en el formulario", "error");
-          return;
-        }
-
-        setActiveStep((prev) => prev + 1);
-        return;
-      }
-
-      // =========================
-      // PASO 1 → CONFIRMAR → CREAR USUARIO
-      // =========================
-      // Paso 1 → Confirmar → crear usuario (UNA SOLA VEZ)
-      if (activeStep === 1) {
-        let userId = idUsuario;
-
-        if (!usuarioCreado) {
-          userId = await crearUsuario();
-          setUsuarioCreado(true);
-        }
-
-        if (tipoUsuario === "comun") {
-          onSuccess?.();
-          onClose();
-          return;
-        }
-
-        setActiveStep((prev) => prev + 1);
-        return;
-      }
-
-      // =========================
-      // PASO 2 → DATOS DE Conductor
-      // =========================
-      if (activeStep === 2 && tipoUsuario === "chofer") {
-        const faltantes = faltanDatosChofer();
-
-        if (faltantes.length > 0) {
-          showSnackbar(
-            `Para continuar, el conductor debe completar TODOS los datos.\n\nFaltan:\n- ${faltantes.join(
-              "\n- ",
-            )}`,
-            "warning",
-          );
-
-          return;
-        }
-
-        await crearChofer(idUsuario);
-        setActiveStep((prev) => prev + 1);
-        return;
-      }
-
-      // =========================
-      // PASO 3 → FOTOS
-      // =========================
-      if (activeStep === steps.length - 1 && tipoUsuario === "Conductor") {
-        const faltantes = faltanImagenesObligatorias();
-
-        if (faltantes.length > 0) {
-          showSnackbar(
-            `Faltan imágenes obligatorias: ${faltantes.join(", ")}`,
-            "warning",
-          );
-
-          return;
-        }
-
-        await subirImagenes();
-        showSnackbar("Conductor creado correctamente", "success");
-        onSuccess?.();
-        onClose();
-        return;
-      }
-
-      // Fallback (por si cambia el flujo)
-      setActiveStep((prev) => prev + 1);
-    } catch (error) {
-      console.error(error);
-
-      const backendMessage =
-        error?.response?.data?.message ||
-        "Error al crear el usuario / conductor";
-
-      showSnackbar(backendMessage, "error");
-    } finally {
-      setLoading(false); // 🔥 SIEMPRE vuelve a habilitar el botón
-    }
-  };
-
-  const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
+    setIdConductor(res.data.id_conductor);
+    return res.data.id_conductor;
   };
 
   const subirImagenes = async () => {
@@ -387,97 +229,128 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
       formData.append("tipo_imagen", tipo);
 
       await axiosTaxi.post("/conductores/imagenes", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total,
-          );
-
-          setProgreso((prev) => ({
-            ...prev,
-            [tipo]: percent,
-          }));
+        onUploadProgress: (e) => {
+          const percent = Math.round((e.loaded * 100) / e.total);
+          setProgreso((p) => ({ ...p, [tipo]: percent }));
         },
       });
     }
   };
-  const rolesPermitidos = roles.filter((r) =>
-    ["usuario", "conductor"].includes(r.nombre_rol.toLowerCase()),
-  );
 
-  const imagenesObligatorias = ["perfil", "dni_frente", "dni_dorso", "seguro"];
+  /* =========================
+     HANDLE NEXT
+  ========================= */
+  const handleNext = async () => {
+    setLoading(true);
 
-  const faltanImagenesObligatorias = () => {
-    return imagenesObligatorias.filter((tipo) => !imagenes[tipo]);
+    try {
+      if (activeStep === 0) {
+        if (!validarUsuario()) {
+          showSnackbar("Completá todos los datos personales", "warning");
+          return;
+        }
+        setActiveStep(1);
+        return;
+      }
+
+      if (activeStep === 1) {
+        if (!usuarioCreado) await crearUsuario();
+
+        if (tipoUsuario === TIPO_USUARIO.USUARIO) {
+          showSnackbar("Usuario creado correctamente", "success");
+          onSuccess?.();
+          onClose();
+          return;
+        }
+
+        setActiveStep(2);
+        return;
+      }
+
+      if (activeStep === 2) {
+        const faltantes = faltanDatosChofer();
+        if (faltantes.length) {
+          showSnackbar(
+            `Faltan datos del conductor: ${faltantes.join(", ")}`,
+            "warning",
+          );
+          return;
+        }
+
+        await crearConductor(idUsuario);
+        setActiveStep(3);
+        return;
+      }
+
+      if (activeStep === 3) {
+        const faltantes = faltanImagenesObligatorias();
+        if (faltantes.length) {
+          showSnackbar(
+            `Faltan imágenes obligatorias: ${faltantes.join(", ")}`,
+            "warning",
+          );
+          return;
+        }
+
+        await subirImagenes();
+        await axiosTaxi.post(`/usuarios/confirmar/${idUsuario}`);
+
+        showSnackbar("Conductor creado correctamente", "success");
+        onSuccess?.();
+        onClose();
+      }
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message || "Error en el proceso de alta";
+      showSnackbar(msg, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const ImagePreview = ({ label, name, file, onChange }) => {
+  const handleBack = () => setActiveStep((s) => s - 1);
+
+  /* =========================
+     EFECTOS
+  ========================= */
+  useEffect(() => {
+    if (open) {
+      obtenerGeneros();
+      obtenerRoles();
+      obtenerTipoVehiculos();
+    }
+  }, [open]);
+
+  /* =========================
+     COMPONENTE IMAGEN
+  ========================= */
+  const ImagePreview = ({ label, name, file }) => {
     const previewUrl = file ? URL.createObjectURL(file) : null;
 
     return (
-      <Box
-        sx={{
-          border: "1px dashed #ccc",
-          borderRadius: 2,
-          p: 1,
-          textAlign: "center",
-        }}
-      >
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          {label}
-        </Typography>
-
-        {previewUrl ? (
+      <Box sx={{ border: "1px dashed #ccc", borderRadius: 2, p: 1 }}>
+        <Typography variant="body2">{label}</Typography>
+        {previewUrl && (
           <img
             src={previewUrl}
             alt={label}
-            style={{
-              width: "100%",
-              height: 120,
-              objectFit: "cover",
-              borderRadius: 4,
-            }}
+            style={{ width: "100%", height: 120, objectFit: "cover" }}
           />
-        ) : (
-          <Box
-            sx={{
-              height: 120,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#999",
-            }}
-          >
-            Sin imagen
-          </Box>
         )}
-
-        <Button
-          component="label"
-          size="small"
-          sx={{ mt: 1 }}
-          variant="outlined"
-        >
-          {file ? "Reemplazar" : "Seleccionar"}
-          <input
-            hidden
-            type="file"
-            accept="image/*"
-            name={name}
-            onChange={onChange}
-          />
+        <Button component="label" size="small" variant="outlined">
+          Seleccionar
+          <input hidden type="file" name={name} onChange={handleFileChange} />
         </Button>
         {progreso[name] !== undefined && (
-          <LinearProgress
-            variant="determinate"
-            value={progreso[name]}
-            sx={{ mt: 1 }}
-          />
+          <LinearProgress value={progreso[name]} variant="determinate" />
         )}
       </Box>
     );
   };
 
+  /* =========================
+     RENDER
+  ========================= */
   const renderStep = () => {
     switch (activeStep) {
       case 0:
@@ -486,48 +359,47 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
             <TextField
               label="Nombre"
               name="nombre"
-              onChange={handleUsuarioChange}
               value={usuario.nombre}
+              onChange={handleUsuarioChange}
             />
             <TextField
               label="Apellido"
               name="apellido"
-              onChange={handleUsuarioChange}
               value={usuario.apellido}
+              onChange={handleUsuarioChange}
             />
             <TextField
               label="DNI"
               name="dni"
-              onChange={handleUsuarioChange}
               value={usuario.dni}
+              onChange={handleUsuarioChange}
             />
             <TextField
               label="Teléfono"
               name="telefono"
-              onChange={handleUsuarioChange}
               value={usuario.telefono}
+              onChange={handleUsuarioChange}
             />
             <TextField
               label="Email"
               name="email"
-              onChange={handleUsuarioChange}
               value={usuario.email}
+              onChange={handleUsuarioChange}
             />
             <TextField
               label="Contraseña"
               type="password"
               name="password"
-              onChange={handleUsuarioChange}
               value={usuario.password}
+              onChange={handleUsuarioChange}
             />
             <TextField
               label="Fecha de nacimiento"
               type="date"
               name="fecha_nacimiento"
-              InputLabelProps={{ shrink: true }}
               value={usuario.fecha_nacimiento}
               onChange={handleUsuarioChange}
-              required
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               select
@@ -535,10 +407,9 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               name="id_genero"
               value={usuario.id_genero}
               onChange={handleUsuarioChange}
-              required
               SelectProps={{ native: true }}
             >
-              <option value=""></option>
+              <option value="" />
               {generos.map((g) => (
                 <option key={g.id_genero} value={g.id_genero}>
                   {g.nombre_genero}
@@ -548,43 +419,26 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
 
             <Box gridColumn="1 / -1">
               <Typography>Tipo de usuario</Typography>
-
               <RadioGroup
                 row
                 value={tipoUsuario}
                 onChange={(e) => setTipoUsuario(e.target.value)}
               >
-                {rolesPermitidos.map((rol) => {
-                  const value =
-                    rol.nombre_rol.toLowerCase() === "conductor"
-                      ? "Conductor"
-                      : "Usuario";
-
-                  return (
-                    <FormControlLabel
-                      key={rol.id_rol}
-                      value={value}
-                      control={<Radio />}
-                      label={
-                        rol.nombre_rol.toLowerCase() === "conductor"
-                          ? "Conductor"
-                          : "Usuario"
-                      }
-                    />
-                  );
-                })}
+                {rolesPermitidos.map((rol) => (
+                  <FormControlLabel
+                    key={rol.id_rol}
+                    value={rol.nombre_rol.toLowerCase()}
+                    control={<Radio />}
+                    label={rol.nombre_rol}
+                  />
+                ))}
               </RadioGroup>
             </Box>
           </Box>
         );
 
       case 1:
-        return (
-          <Box>
-            <Typography variant="h6">Confirmar datos</Typography>
-            <pre>{JSON.stringify({ usuario, tipoUsuario }, null, 2)}</pre>
-          </Box>
-        );
+        return <pre>{JSON.stringify({ usuario, tipoUsuario }, null, 2)}</pre>;
 
       case 2:
         return (
@@ -593,6 +447,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               label="Licencia"
               name="licencia"
               required
+              value={conductor.licencia}
               onChange={handleConductorChange}
             />
 
@@ -602,6 +457,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               name="vencimientoLicencia"
               required
               InputLabelProps={{ shrink: true }}
+              value={conductor.vencimientoLicencia}
               onChange={handleConductorChange}
             />
 
@@ -611,6 +467,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               name="vencimientoCarnet"
               required
               InputLabelProps={{ shrink: true }}
+              value={conductor.vencimientoCarnet}
               onChange={handleConductorChange}
             />
 
@@ -620,6 +477,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               name="vencimientoSeguro"
               required
               InputLabelProps={{ shrink: true }}
+              value={conductor.vencimientoSeguro}
               onChange={handleConductorChange}
             />
 
@@ -627,6 +485,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               label="Póliza"
               name="poliza"
               required
+              value={conductor.poliza}
               onChange={handleConductorChange}
             />
 
@@ -634,6 +493,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               label="Patente"
               name="patente"
               required
+              value={conductor.patente}
               onChange={handleConductorChange}
             />
 
@@ -641,6 +501,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               label="Marca"
               name="marca"
               required
+              value={conductor.marca}
               onChange={handleConductorChange}
             />
 
@@ -648,6 +509,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               label="Modelo"
               name="modelo"
               required
+              value={conductor.modelo}
               onChange={handleConductorChange}
             />
 
@@ -656,20 +518,33 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               name="anio"
               type="number"
               required
+              value={conductor.anio}
               onChange={handleConductorChange}
             />
 
+            {/* ✅ SELECT DE TIPO DE VEHÍCULO */}
             <TextField
+              select
               label="Tipo de vehículo"
               name="tipoVehiculo"
               required
+              value={conductor.tipoVehiculo}
               onChange={handleConductorChange}
-            />
+              SelectProps={{ native: true }}
+            >
+              <option value=""></option>
+              {tipoVehiculos.map((tv) => (
+                <option key={tv.id_tipo_vehiculo} value={tv.id_tipo_vehiculo}>
+                  {tv.nombre_tipo_vehiculo}
+                </option>
+              ))}
+            </TextField>
 
             <TextField
               label="Número de motor"
               name="numeroMotor"
               required
+              value={conductor.numeroMotor}
               onChange={handleConductorChange}
             />
 
@@ -677,6 +552,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
               label="Número de chasis"
               name="numeroChassis"
               required
+              value={conductor.numeroChassis}
               onChange={handleConductorChange}
             />
           </Box>
@@ -689,45 +565,9 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
             gridTemplateColumns="repeat(auto-fill, minmax(160px, 1fr))"
             gap={2}
           >
-            <Typography variant="caption" color="error">
-              * Imágenes obligatorias
-            </Typography>
-            <ImagePreview
-              label="Foto perfil *"
-              name="perfil"
-              file={imagenes.perfil}
-              onChange={handleFileChange}
-            />
-            <ImagePreview
-              label="DNI frente *"
-              name="dni_frente"
-              file={imagenes.dni_frente}
-              onChange={handleFileChange}
-            />
-            <ImagePreview
-              label="DNI dorso *"
-              name="dni_dorso"
-              file={imagenes.dni_dorso}
-              onChange={handleFileChange}
-            />
-            <ImagePreview
-              label="Tarjeta verde *"
-              name="tarjeta_verde"
-              file={imagenes.tarjeta_verde}
-              onChange={handleFileChange}
-            />
-            <ImagePreview
-              label="Seguro *"
-              name="seguro"
-              file={imagenes.seguro}
-              onChange={handleFileChange}
-            />
-            <ImagePreview
-              label="Vehículo frente *"
-              name="vehiculo_frente"
-              file={imagenes.vehiculo_frente}
-              onChange={handleFileChange}
-            />
+            {Object.keys(imagenes).map((k) => (
+              <ImagePreview key={k} label={k} name={k} file={imagenes[k]} />
+            ))}
           </Box>
         );
 
@@ -739,40 +579,33 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
   return (
     <Dialog open={open} maxWidth="md" fullWidth>
       <DialogTitle>Alta de Usuario</DialogTitle>
-
       <DialogContent>
         <Stepper activeStep={activeStep}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
+          {steps.map((s) => (
+            <Step key={s}>
+              <StepLabel>{s}</StepLabel>
             </Step>
           ))}
         </Stepper>
-
         <Box mt={3}>{renderStep()}</Box>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
+        <Button onClick={() => handleCancelar()}>Cancelar</Button>
         {activeStep > 0 && !usuarioCreado && (
           <Button onClick={handleBack}>Atrás</Button>
         )}
-
         <Button variant="contained" onClick={handleNext} disabled={loading}>
           {activeStep === steps.length - 1 ? "Finalizar" : "Siguiente"}
         </Button>
       </DialogActions>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
+        <Alert severity={snackbar.severity} onClose={handleCloseSnackbar}>
           {snackbar.message}
         </Alert>
       </Snackbar>

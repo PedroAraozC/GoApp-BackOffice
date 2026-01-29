@@ -40,6 +40,7 @@ const DetalleConductor = () => {
   const [loading, setLoading] = useState(true);
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const [openModalEstado, setOpenModalEstado] = useState(false);
+  const [observaciones, setObservaciones] = useState("");
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -234,8 +235,8 @@ const DetalleConductor = () => {
                       conductor?.nombre_estado === "APROBADO"
                         ? "success"
                         : conductor?.nombre_estado === "RECHAZADO"
-                        ? "error"
-                        : "warning"
+                          ? "error"
+                          : "warning"
                     }
                     size="small"
                   />
