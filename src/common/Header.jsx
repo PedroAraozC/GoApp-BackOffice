@@ -63,7 +63,13 @@ const Header = () => {
 
   const navLinks = [
     { name: "Inicio", path: "/BackOffice/" },
-    { name: "Choferes", path: "#/validacion-conductores" },
+    {
+      name: "Choferes",
+      subItems: [
+        { name: "Pendientes", path: "#/conductores-pendientes" },
+        { name: "validacion", path: "#/validacion-conductores" },
+      ],
+    },
     { name: "Usuarios", path: "#/Usuarios" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
@@ -223,7 +229,7 @@ const Header = () => {
                     height: 12,
                     borderRadius: "50%",
                     backgroundColor: getPriorityColor(
-                      selectedComunicado.fecha_leido !== "0000-00-00 00:00:00"
+                      selectedComunicado.fecha_leido !== "0000-00-00 00:00:00",
                     ),
                   }}
                 />
