@@ -15,6 +15,8 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import axiosTaxi from "../../config/axiosTaxi.js";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
+import DocumentoCard from "./DocumentoCard.jsx";
+const baseUrl = import.meta.env.VITE_APP_RUTA;
 
 const CompletarConductor = () => {
   const { id_usuario } = useParams();
@@ -74,6 +76,23 @@ const CompletarConductor = () => {
     }
   };
 
+  const construirUrlAbsoluta = (ruta) => {
+    if (!ruta) return null;
+
+    // 🔧 Windows → URL
+    const normalizada = ruta?.replace(/\\/g, "/");
+
+    // Ya es URL completa
+    if (normalizada.startsWith("http")) {
+      return normalizada;
+    }
+    console.log("VITE_API_URL =", baseUrl);
+
+    // Base pública donde servís imágenes
+
+    return `${baseUrl}imagenes${normalizada}`;
+  };
+
   const cargarImagenes = async (idConductor) => {
     try {
       const { data } = await axiosTaxi.get(
@@ -82,21 +101,16 @@ const CompletarConductor = () => {
 
       if (data?.imagenes) {
         const nuevasImagenes = {};
-
+        console.log(data.imagenes, "IMAGENES OBTENIDAS DEL SERVIDOR");
         Object.entries(data.imagenes).forEach(([tipo, ruta]) => {
-          // ✅ Construir URL correctamente
-          // Si la ruta ya incluye el dominio completo, usarla tal cual
-          // Si no, construir la URL con la base de la API
-          const urlCompleta = ruta.startsWith("http")
-            ? ruta
-            : `${import.meta.env.VITE_API_URL}${ruta.startsWith("/") ? ruta : "/" + ruta}`;
+          const urlCompleta = construirUrlAbsoluta(ruta);
 
           const esPdf = ruta.toLowerCase().endsWith(".pdf");
 
           nuevasImagenes[tipo] = {
             file: null,
             tipo: esPdf ? "pdf" : "image",
-            preview: urlCompleta,
+            preview: urlCompleta, // 🔥 ABSOLUTA
             existente: true,
             nombreArchivo: ruta.split("/").pop(),
           };
@@ -240,7 +254,8 @@ const CompletarConductor = () => {
   };
 
   const abrirPreview = (url) => {
-    window.open(url, "_blank");
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleFileChange = (key, file) => {
@@ -448,205 +463,21 @@ const CompletarConductor = () => {
               </Alert>
             )}
 
-            <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={2}>
-              {Object.keys(imagenes).map((key) => (
-                <Box key={key}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    disabled={!puedeSubirArchivos}
-                    fullWidth
-                    sx={{
-                      textTransform: "capitalize",
-                      color: imagenes[key] ? "success.main" : "primary.main",
-                      borderColor: imagenes[key]
-                        ? "success.main"
-                        : "primary.main",
-                    }}
-                  >
-                    {imagenes[key]?.existente && !imagenes[key]?.file
-                      ? `✓ ${key.replace(/_/g, " ")}`
-                      : imagenes[key]?.file
-                        ? `✓ ${key.replace(/_/g, " ")}`
-                        : `Subir ${key.replace(/_/g, " ")}`}
-                    <input
-                      hidden
-                      type="file"
-                      accept="image/*,application/pdf"
-                      disabled={!puedeSubirArchivos}
-                      onChange={(e) => handleFileChange(key, e.target.files[0])}
-                    />
-                  </Button>
-
-                  {/* 🔍 PREVISUALIZACIÓN */}
-                  {imagenes[key] && (
-                    <Box mt={1} sx={{ position: "relative" }}>
-                      {imagenes[key].tipo === "image" ? (
-                        <Box sx={{ position: "relative" }}>
-                          <img
-                            src={imagenes[key].preview}
-                            alt={key}
-                            style={{
-                              width: "100%",
-                              height: 180,
-                              objectFit: "cover",
-                              borderRadius: 8,
-                              border: "2px solid #ddd",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => abrirPreview(imagenes[key].preview)}
-                          />
-                          {/* Badge de estado */}
-                          {imagenes[key].existente && !imagenes[key].file && (
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                top: 8,
-                                left: 8,
-                                bgcolor: "success.main",
-                                color: "white",
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: 1,
-                                fontSize: "0.75rem",
-                                fontWeight: 600,
-                              }}
-                            >
-                              ✓ Guardado
-                            </Box>
-                          )}
-                          {imagenes[key].file && (
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                top: 8,
-                                left: 8,
-                                bgcolor: "warning.main",
-                                color: "white",
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: 1,
-                                fontSize: "0.75rem",
-                                fontWeight: 600,
-                              }}
-                            >
-                              Pendiente
-                            </Box>
-                          )}
-                          {/* Botón eliminar */}
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="error"
-                            sx={{
-                              position: "absolute",
-                              bottom: 8,
-                              right: 8,
-                              minWidth: "auto",
-                              px: 1,
-                            }}
-                            onClick={() => eliminarImagen(key)}
-                          >
-                            🗑️
-                          </Button>
-                        </Box>
-                      ) : (
-                        <Box
-                          sx={{
-                            p: 2,
-                            border: "2px solid #ccc",
-                            borderRadius: 2,
-                            textAlign: "center",
-                            backgroundColor: "#f5f5f5",
-                            minHeight: 180,
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                            position: "relative",
-                            cursor: imagenes[key].preview
-                              ? "pointer"
-                              : "default",
-                          }}
-                          onClick={() =>
-                            imagenes[key].preview &&
-                            abrirPreview(imagenes[key].preview)
-                          }
-                        >
-                          <Typography fontSize="3rem">📄</Typography>
-                          <Typography fontWeight={600} sx={{ mt: 1 }}>
-                            PDF cargado
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              mt: 0.5,
-                              wordBreak: "break-word",
-                              fontSize: "0.75rem",
-                            }}
-                          >
-                            {imagenes[key].nombreArchivo || "Archivo PDF"}
-                          </Typography>
-                          {/* Badge de estado */}
-                          {imagenes[key].existente && !imagenes[key].file && (
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                top: 8,
-                                left: 8,
-                                bgcolor: "success.main",
-                                color: "white",
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: 1,
-                                fontSize: "0.75rem",
-                                fontWeight: 600,
-                              }}
-                            >
-                              ✓ Guardado
-                            </Box>
-                          )}
-                          {imagenes[key].file && (
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                top: 8,
-                                left: 8,
-                                bgcolor: "warning.main",
-                                color: "white",
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: 1,
-                                fontSize: "0.75rem",
-                                fontWeight: 600,
-                              }}
-                            >
-                              Pendiente
-                            </Box>
-                          )}
-                          {/* Botón eliminar */}
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="error"
-                            sx={{
-                              position: "absolute",
-                              bottom: 8,
-                              right: 8,
-                              minWidth: "auto",
-                              px: 1,
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              eliminarImagen(key);
-                            }}
-                          >
-                            🗑️
-                          </Button>
-                        </Box>
-                      )}
-                    </Box>
-                  )}
-                </Box>
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(auto-fill, minmax(260px, 1fr))"
+              gap={2}
+            >
+              {Object.entries(imagenes).map(([key, value]) => (
+                <DocumentoCard
+                  key={key}
+                  label={key?.replace(/_/g, " ")}
+                  data={value}
+                  disabled={!puedeSubirArchivos}
+                  onUpload={(file) => handleFileChange(key, file)}
+                  onDelete={() => eliminarImagen(key)}
+                  onPreview={abrirPreview}
+                />
               ))}
             </Box>
 
