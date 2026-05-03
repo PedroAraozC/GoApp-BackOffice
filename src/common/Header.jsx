@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { useUser } from "../context/UserContext";
+import { useAuth } from "../../src/context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./Header.css";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +24,8 @@ import axiosTaxi from "../config/axiosTaxi";
 const Header = () => {
   const [currentDate, setCurrentDate] = useState("");
   const navigate = useNavigate();
-  // const { userData, logout } = useUser();
+  // const { logout } = useUser();
+  const { usuario } = useAuth();
   const [hasUnreadNotifications] = useState(true);
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [selectedComunicado, setSelectedComunicado] = useState(null);
@@ -62,19 +64,19 @@ const Header = () => {
   };
 
   const navLinks = [
-    { name: "Inicio", path: "/BackOffice/" },
+    { name: "Inicio", path: "#/home" },
     { name: "Choferes", path: "#/validacion-conductores" },
     { name: "Usuarios", path: "#/Usuarios" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
 
   const navLinksProv = [
-    { name: "Inicio", path: "/BackOffice/" },
+    { name: "Inicio", path: "#/home" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
 
   const navLinksAdmin = [
-    { name: "Inicio", path: "/BackOffice/" },
+    { name: "Inicio", path: "#/home" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
 
@@ -223,7 +225,7 @@ const Header = () => {
                     height: 12,
                     borderRadius: "50%",
                     backgroundColor: getPriorityColor(
-                      selectedComunicado.fecha_leido !== "0000-00-00 00:00:00"
+                      selectedComunicado.fecha_leido !== "0000-00-00 00:00:00",
                     ),
                   }}
                 />
@@ -260,8 +262,10 @@ const Header = () => {
                 className="me-2 mb-1 d-flex align-self-end"
               />
               <div className="d-flex flex-column">
-                <p className="user-role">Usuario Conectado</p>
-                <p className="user-id"></p>
+                <p className="user-role">{usuario?.nombre_rol} Conectado</p>
+                <p className="user-id">
+                  {usuario?.apellido_usuario} {usuario?.nombre_usuario}
+                </p>
               </div>
             </div>
           </div>

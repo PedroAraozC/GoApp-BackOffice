@@ -135,6 +135,8 @@
 .user-avatar {
     color: var(--primary-color);
     display: flex;
+    align-items: center;
+    justify-items: center;
 }
 
 .user-details {
@@ -145,12 +147,15 @@
 .user-role {
     font-weight: 600;
     margin: 0;
+    margin-left: 10px;
     font-size: 14px;
 }
 
 .user-id {
     color: var(--text-light);
     margin: 0;
+    margin-left: 10px;
+    padding: 0;
     font-size: 14px;
 }
 

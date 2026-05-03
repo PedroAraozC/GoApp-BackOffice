@@ -1,12 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import { useAuth } from "../context/AuthContext";
 import { CircularProgress } from "@mui/material";
 
 const PrivateRoute = ({ children }) => {
-  const { userData, isLoading } = useUser();
+  const { token, loading } = useAuth();
 
   // Mostrar loading mientras se verifica
-  if (isLoading) {
+  if (loading) {
     return (
       <div
         style={{
@@ -24,18 +25,8 @@ const PrivateRoute = ({ children }) => {
       >
         <CircularProgress color="primary" />
       </div>
-    ); // O tu componente de loading
+    );
   }
-
-  // Si no hay usuario logueado, redirigir al login
-  if (!userData) {
-    return <Navigate to="/" replace />;
-  }
-
-  // Si hay usuario, mostrar el componente
-  return children;
+  return token ? children : <Navigate to="/" replace />;
 };
-
 export default PrivateRoute;
-
-// PublicRoute.js - Para rutas que solo deben ser accesibles sin autenticación (como login)

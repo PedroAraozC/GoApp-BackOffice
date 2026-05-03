@@ -7,35 +7,80 @@ import TablaUsuarios from "./components/TablaUsuarios/TablaUsuarios";
 import DetalleConductor from "./components/TablaChoferes/DeatalleConductor";
 import ConductoresPendientes from "./components/TablaChoferes/ConductoresPendientes";
 import CompletarConductor from "./components/TablaChoferes/CompletarConductor";
+import Login from "./components/Login/Login";
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRoute from "./routes/PrivateRoute";
 
 function App() {
   return (
-    <HashRouter>
-      <Layout>
+    <AuthProvider>
+      <HashRouter>
         <Routes>
-          <Route exact path="/" element={<Home />} />
+          <Route
+            exact
+            path="/home"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <Home />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/validacion-conductores"
-            element={<TablaValidacionConductores />}
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <TablaValidacionConductores />
+                </Layout>
+              </PrivateRoute>
+            }
           />
           <Route
             path="/validacion-conductores/:id"
-            element={<DetalleConductor />}
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <DetalleConductor />{" "}
+                </Layout>
+              </PrivateRoute>
+            }
           />
           <Route
             exact
             path="/conductores-pendientes"
-            element={<ConductoresPendientes />}
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <ConductoresPendientes />{" "}
+                </Layout>
+              </PrivateRoute>
+            }
           />
           <Route
             path="/completar/:id_usuario"
-            element={<CompletarConductor />}
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <CompletarConductor />
+                </Layout>
+              </PrivateRoute>
+            }
           />
-
-          <Route exact path="/Usuarios" element={<TablaUsuarios />} />
+          <Route exact path="/" element={<Login />} />
+          <Route
+            exact
+            path="/usuarios"
+            element={
+              <Layout>
+                <TablaUsuarios />
+              </Layout>
+            }
+          />
         </Routes>
-      </Layout>
-    </HashRouter>
+      </HashRouter>
+    </AuthProvider>
   );
 }
 

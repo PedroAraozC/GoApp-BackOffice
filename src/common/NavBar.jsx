@@ -7,12 +7,13 @@ import { IconButton, Menu, MenuItem } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
 import appIcon from "../assets/app_icon.png";
 import Header from "./Header";
+import {useAuth} from "../../src/context/AuthContext";
 
 export default function NavBar() {
   const [anchorEl, setAnchorEl] = useState(null);
+  const { usuario } = useAuth();
   // Definimos estas variables ya que fueron comentadas arriba
   const authenticated = false; // O puedes establecerlo en true si lo necesitas para pruebas
-  const user = { nombre_persona: "Usuario de Prueba" }; // Objeto de usuario de prueba
 
   // const navigate = useNavigate();
 
@@ -31,11 +32,7 @@ export default function NavBar() {
           <Toolbar>
             {/* <SideBar /> */}
             <div className="containerNav">
-              <img
-                src={appIcon}
-                alt="Logo App"
-                className="appIcon"
-              />
+              <img src={appIcon} alt="Logo App" className="appIcon" />
               {/* <div className="tituloNav">PORTAL DE TESORERIA</div> */}
               <div className="tituloNav">Tucu Taxi</div>
               {
@@ -79,7 +76,7 @@ export default function NavBar() {
             </div>
           </Toolbar>
         </AppBar>
-              <Header />
+        <Header />
       </Box>
     </>
   );
