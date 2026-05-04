@@ -16,7 +16,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faPencil } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import "../Tablas.css";
@@ -73,8 +73,8 @@ const TablaValidacionConductores = () => {
     const lowerSearch = searchText.toLowerCase();
     const filtered = solicitudes.filter((row) =>
       Object.values(row).some(
-        (val) => val && val.toString().toLowerCase().includes(lowerSearch)
-      )
+        (val) => val && val.toString().toLowerCase().includes(lowerSearch),
+      ),
     );
     setFilteredSolicitudes(filtered);
   }, [searchText, solicitudes]);
@@ -119,8 +119,8 @@ const TablaValidacionConductores = () => {
           estado === "Aprobado"
             ? "#2e7d32"
             : estado === "Rechazado"
-            ? "#d32f2f"
-            : "#ed6c02";
+              ? "#d32f2f"
+              : "#ed6c02";
         return (
           <Typography sx={{ color, fontWeight: 600 }}>{estado}</Typography>
         );
@@ -142,22 +142,40 @@ const TablaValidacionConductores = () => {
       align: "center",
       sortable: false,
       renderCell: (params) => (
-        <Tooltip title="Ver detalle" arrow>
-          <IconButton
-            onClick={() =>
-              navigate(`/validacion-conductores/${params.row.id_usuario}`)
-            }
-            sx={{
-              color: "#000000",
-              "&:hover": {
-                color: "#0000008a",
-                backgroundColor: "rgba(0,0,0,0.08)",
-              },
-            }}
-          >
-            <FontAwesomeIcon icon={faEye} />
-          </IconButton>
-        </Tooltip>
+        <>
+          <Tooltip title="Ver detalle" arrow>
+            <IconButton
+              onClick={() =>
+                navigate(`/validacion-conductores/${params.row.id_usuario}`)
+              }
+              sx={{
+                color: "#000000",
+                "&:hover": {
+                  color: "#0000008a",
+                  backgroundColor: "rgba(0,0,0,0.08)",
+                },
+              }}
+            >
+              <FontAwesomeIcon icon={faEye} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Agregar documentacion faltante" arrow>
+            <IconButton
+              onClick={() =>
+                navigate(`/completar/${params.row.id_usuario}`)
+              }
+              sx={{
+                color: "#000000",
+                "&:hover": {
+                  color: "#0000008a",
+                  backgroundColor: "rgba(0,0,0,0.08)",
+                },
+              }}
+            >
+              <FontAwesomeIcon icon={faPencil} />
+            </IconButton>
+          </Tooltip>
+        </>
       ),
     },
   ];

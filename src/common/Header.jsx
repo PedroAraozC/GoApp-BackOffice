@@ -64,8 +64,19 @@ const Header = () => {
   };
 
   const navLinks = [
+<<<<<<< HEAD
     { name: "Inicio", path: "#/home" },
     { name: "Choferes", path: "#/validacion-conductores" },
+=======
+    { name: "Inicio", path: "/BackOffice/" },
+    {
+      name: "Choferes",
+      subItems: [
+        { name: "Pendientes", path: "#/conductores-pendientes" },
+        { name: "validacion", path: "#/validacion-conductores" },
+      ],
+    },
+>>>>>>> 86ff56755fecb8db2b3dfc208d710b09a6f79bec
     { name: "Usuarios", path: "#/Usuarios" },
     { name: "Salir", onclick: () => handleLogout(), path: "/" },
   ];
