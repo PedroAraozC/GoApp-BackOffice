@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import axiosTaxi from "../../config/axiosTaxi";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +13,7 @@ const Login = () => {
     confirmarPassword: "",
     dni: "",
     telefono: "",
+    genero: "",
     fechaNacimiento: "",
   });
   const [message, setMessage] = useState(null);
@@ -20,6 +21,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [generos, setGeneros] = useState([]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -28,15 +30,53 @@ const Login = () => {
     setMessage(null);
   };
 
+  const obtenerGeneros = async () => {
+    try {
+      const { data } = await axiosTaxi.get(`/generos/obtenerGenero/`);
+      setGeneros(data?.result || null);
+    } catch (error) {
+      console.error("Error al obtener generos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const validateForm = () => {
     if (!form.email.trim()) return "Ingresa un correo válido.";
     if (mode === "register" && form.password.length < 6)
       return "La contraseña debe tener al menos 6 caracteres.";
     if (mode === "register" && form.password !== form.confirmarPassword)
       return "Las contraseñas no coinciden.";
+    if (mode === "register" && !form.genero) {
+      return "Seleccione un genero.";
+    }
+    if (mode === "register") {
+      const edad =
+        new Date().getFullYear() - new Date(form.fechaNacimiento).getFullYear();
+      if (edad < 17 || edad > 120) {
+        alert("Edad inválida");
+      }
+    }
     if (mode === "register" && !form.nombre.trim()) return "Ingresa tu nombre.";
     return null;
   };
+
+  const hoy = new Date();
+
+  const maxDate = new Date(
+    hoy.getFullYear() - 17,
+    hoy.getMonth(),
+    hoy.getDate(),
+  );
+
+  const minDate = new Date(
+    hoy.getFullYear() - 120,
+    hoy.getMonth(),
+    hoy.getDate(),
+  );
+
+  // formato yyyy-mm-dd
+  const formatDate = (date) => date.toISOString().split("T")[0];
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -51,43 +91,88 @@ const Login = () => {
     setMessage(null);
 
     const endpoint =
-      mode === "login" ? "/usuarios/login" : "/api/auth/register";
+      mode === "login" ? "/usuarios/login" : "/usuarios/crearUsuario";
     console.log(form);
 
     const payload = {
-      email: form.email,
-      password: form.password,
+      email_usuario: form.email || null,
+      password: form.password || null,
       ...(mode === "register" && {
-        nombre: form.nombre,
-        apellido: form.apellido,
-        dni: form.dni,
-        telefono: form.telefono,
-        fechaNacimiento: form.fechaNacimiento,
+        nombre_usuario: form.nombre || null,
+        apellido_usuario: form.apellido || null,
+        dni: form.dni || null,
+        id_genero: form.genero || null,
+        telefono_usuario: form.telefono || null,
+        fecha_nacimiento: form.fechaNacimiento || null,
+        id_rol: 1,
       }),
     };
-
     try {
       const response = await axiosTaxi.post(endpoint, payload);
 
       const data = response.data;
 
-      // LOGIN OK
-      console.log(data.result);
-      localStorage.setItem("token", data.token);
-      const usuario = {
-        ...data.result,
-        nombre: data.result.nombre_usuario,
-        apellido: data.result.apellido_usuario,
-      };
+      if (mode === "login") {
+        // LOGIN
+        localStorage.setItem("token", data.token);
 
-      localStorage.setItem("usuario", JSON.stringify(usuario));
+        const usuario = {
+          ...data.result,
+          nombre: data.result.nombre_usuario,
+          apellido: data.result.apellido_usuario,
+        };
 
-      login({
-        token: data.token,
-        usuario,
-      });
-      navigate("/home", { replace: true });
+        localStorage.setItem("usuario", JSON.stringify(usuario));
 
+        login({
+          token: data.token,
+          usuario,
+        });
+
+        navigate("/home", { replace: true });
+      } else {
+        // ✅ REGISTRO
+
+        // limpiar form
+        // setForm({
+        //   nombre: "",
+        //   apellido: "",
+        //   email: "",
+        //   password: "",
+        //   confirmarPassword: "",
+        //   dni: "",
+        //   telefono: "",
+        //   genero: "",
+        //   fechaNacimiento: "",
+        // });
+
+        const loginResponse = await axiosTaxi.post(
+          "/usuarios/loginBackOffice",
+          {
+            email_usuario: form.email,
+            password: form.password,
+          },
+        );
+
+        const loginData = loginResponse.data;
+
+        localStorage.setItem("token", loginData.token);
+
+        const usuario = {
+          ...loginData.result,
+          nombre: loginData.result.nombre_usuario,
+          apellido: loginData.result.apellido_usuario,
+        };
+
+        localStorage.setItem("usuario", JSON.stringify(usuario));
+
+        login({
+          token: loginData.token,
+          usuario,
+        });
+
+        navigate("/home", { replace: true });
+      }
       setMessage(
         mode === "login"
           ? "¡Bienvenido de nuevo!"
@@ -110,6 +195,10 @@ const Login = () => {
   const handleGoogleLogin = () => {
     window.location.href = "/api/auth/google";
   };
+
+  useEffect(() => {
+    obtenerGeneros();
+  }, []);
 
   return (
     <div
@@ -227,6 +316,9 @@ const Login = () => {
                 value={form.dni}
                 onChange={handleChange}
                 placeholder="12345678"
+                maxLength={13}
+                minLength={8}
+                type="number"
                 style={{
                   width: "100%",
                   padding: 12,
@@ -244,6 +336,8 @@ const Login = () => {
                 value={form.telefono}
                 onChange={handleChange}
                 placeholder="+54 9 11 1234 5678"
+                maxLength={18}
+                type="number"
                 style={{
                   width: "100%",
                   padding: 12,
@@ -254,6 +348,29 @@ const Login = () => {
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={{ display: "block", marginBottom: 6 }}>
+                Género
+              </label>
+              <select
+                name="genero"
+                value={form.genero}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  padding: 12,
+                  borderRadius: 10,
+                  border: "1px solid #ccc",
+                }}
+              >
+                <option value="">Seleccione su género</option>
+                {generos.map((g) => (
+                  <option key={g.id_genero} value={g.id_genero}>
+                    {g.nombre_genero}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: "block", marginBottom: 6 }}>
                 Fecha de nacimiento
               </label>
               <input
@@ -261,6 +378,8 @@ const Login = () => {
                 name="fechaNacimiento"
                 value={form.fechaNacimiento}
                 onChange={handleChange}
+                min={formatDate(minDate)}
+                max={formatDate(maxDate)}
                 style={{
                   width: "100%",
                   padding: 12,
@@ -382,7 +501,8 @@ const Login = () => {
       <p style={{ marginTop: 18, textAlign: "center", color: "#666" }}>
         {mode === "login"
           ? "¿No tienes cuenta? Regístrate para poder acceder."
-          : "¿Ya tienes cuenta? Inicia sesión con tu correo o Google."}
+          : "¿Ya tienes cuenta? Inicia sesión con tu correo"}
+        {/* : "¿Ya tienes cuenta? Inicia sesión con tu correo o Google."} */}
       </p>
     </div>
   );
