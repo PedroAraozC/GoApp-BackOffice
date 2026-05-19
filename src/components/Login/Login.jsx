@@ -43,22 +43,9 @@ const Login = () => {
 
   const validateForm = () => {
     if (!form.email.trim()) return "Ingresa un correo válido.";
-    if (mode === "register" && form.password.length < 6)
+    if (form.password.length <= 6 && form.password > 0)
       return "La contraseña debe tener al menos 6 caracteres.";
-    if (mode === "register" && form.password !== form.confirmarPassword)
-      return "Las contraseñas no coinciden.";
-    if (mode === "register" && !form.genero) {
-      return "Seleccione un genero.";
-    }
-    if (mode === "register") {
-      const edad =
-        new Date().getFullYear() - new Date(form.fechaNacimiento).getFullYear();
-      if (edad < 17 || edad > 120) {
-        alert("Edad inválida");
-      }
-    }
-    if (mode === "register" && !form.nombre.trim()) return "Ingresa tu nombre.";
-    return null;
+    if (!form.password.trim()) return "La contraseña es requerida.";
   };
 
   const hoy = new Date();
@@ -90,22 +77,12 @@ const Login = () => {
     setError(null);
     setMessage(null);
 
-    const endpoint =
-      mode === "login" ? "/usuarios/login" : "/usuarios/crearUsuario";
+    const endpoint = "/usuarios/loginBackOffice";
     console.log(form);
 
     const payload = {
       email_usuario: form.email || null,
       password: form.password || null,
-      ...(mode === "register" && {
-        nombre_usuario: form.nombre || null,
-        apellido_usuario: form.apellido || null,
-        dni: form.dni || null,
-        id_genero: form.genero || null,
-        telefono_usuario: form.telefono || null,
-        fecha_nacimiento: form.fechaNacimiento || null,
-        id_rol: 1,
-      }),
     };
     try {
       const response = await axiosTaxi.post(endpoint, payload);
@@ -131,21 +108,6 @@ const Login = () => {
 
         navigate("/home", { replace: true });
       } else {
-        // ✅ REGISTRO
-
-        // limpiar form
-        // setForm({
-        //   nombre: "",
-        //   apellido: "",
-        //   email: "",
-        //   password: "",
-        //   confirmarPassword: "",
-        //   dni: "",
-        //   telefono: "",
-        //   genero: "",
-        //   fechaNacimiento: "",
-        // });
-
         const loginResponse = await axiosTaxi.post(
           "/usuarios/loginBackOffice",
           {
@@ -173,11 +135,7 @@ const Login = () => {
 
         navigate("/home", { replace: true });
       }
-      setMessage(
-        mode === "login"
-          ? "¡Bienvenido de nuevo!"
-          : "Registro exitoso. ¡Bienvenido a bordo!",
-      );
+      setMessage("¡Bienvenido a bordo!");
     } catch (err) {
       console.error("ERROR AXIOS:", err);
 
@@ -212,7 +170,7 @@ const Login = () => {
       }}
     >
       <h1 style={{ marginBottom: 8, fontSize: 32, textAlign: "center" }}>
-        {mode === "login" ? "Iniciar sesión" : "Crear cuenta poderosa"}
+        {"Iniciar sesión"}
       </h1>
 
       <div
@@ -229,168 +187,17 @@ const Login = () => {
           style={{
             padding: "10px 20px",
             borderRadius: 999,
-            border: mode === "login" ? "2px solid #111" : "1px solid #ccc",
-            backgroundColor: mode === "login" ? "#111" : "#f8f8f8",
-            color: mode === "login" ? "#fff" : "#333",
+            border: "2px solid #111",
+            backgroundColor: "#111",
+            color: "#fff",
             cursor: "pointer",
           }}
         >
           Login
         </button>
-        <button
-          type="button"
-          onClick={() => setMode("register")}
-          style={{
-            padding: "10px 20px",
-            borderRadius: 999,
-            border: mode === "register" ? "2px solid #111" : "1px solid #ccc",
-            backgroundColor: mode === "register" ? "#111" : "#f8f8f8",
-            color: mode === "register" ? "#fff" : "#333",
-            cursor: "pointer",
-          }}
-        >
-          Registro
-        </button>
       </div>
 
-      {/* <button
-        onClick={handleGoogleLogin}
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-          padding: "12px 16px",
-          marginBottom: 20,
-          borderRadius: 12,
-          border: "1px solid #ddd",
-          backgroundColor: "#fff",
-          cursor: "pointer",
-        }}
-      >
-        <span>Iniciar sesión con Google</span>
-      </button> */}
-
       <form onSubmit={handleSubmit}>
-        {mode === "register" && (
-          <>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: "block", marginBottom: 6 }}>
-                Nombre
-              </label>
-              <input
-                name="nombre"
-                value={form.nombre}
-                onChange={handleChange}
-                placeholder="Pedro"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
-                  border: "1px solid #ccc",
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: "block", marginBottom: 6 }}>
-                Apellido
-              </label>
-              <input
-                name="apellido"
-                value={form.apellido}
-                onChange={handleChange}
-                placeholder="Pérez"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
-                  border: "1px solid #ccc",
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: "block", marginBottom: 6 }}>DNI</label>
-              <input
-                name="dni"
-                value={form.dni}
-                onChange={handleChange}
-                placeholder="12345678"
-                maxLength={13}
-                minLength={8}
-                type="number"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
-                  border: "1px solid #ccc",
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: "block", marginBottom: 6 }}>
-                Teléfono
-              </label>
-              <input
-                name="telefono"
-                value={form.telefono}
-                onChange={handleChange}
-                placeholder="+54 9 11 1234 5678"
-                maxLength={18}
-                type="number"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
-                  border: "1px solid #ccc",
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: "block", marginBottom: 6 }}>
-                Género
-              </label>
-              <select
-                name="genero"
-                value={form.genero}
-                onChange={handleChange}
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
-                  border: "1px solid #ccc",
-                }}
-              >
-                <option value="">Seleccione su género</option>
-                {generos.map((g) => (
-                  <option key={g.id_genero} value={g.id_genero}>
-                    {g.nombre_genero}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: "block", marginBottom: 6 }}>
-                Fecha de nacimiento
-              </label>
-              <input
-                type="date"
-                name="fechaNacimiento"
-                value={form.fechaNacimiento}
-                onChange={handleChange}
-                min={formatDate(minDate)}
-                max={formatDate(maxDate)}
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
-                  border: "1px solid #ccc",
-                }}
-              />
-            </div>
-          </>
-        )}
-
         <div style={{ marginBottom: 14 }}>
           <label style={{ display: "block", marginBottom: 6 }}>Correo</label>
           <input
@@ -426,27 +233,6 @@ const Login = () => {
             }}
           />
         </div>
-
-        {mode === "register" && (
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: "block", marginBottom: 6 }}>
-              Confirmar contraseña
-            </label>
-            <input
-              name="confirmarPassword"
-              type="password"
-              value={form.confirmarPassword}
-              onChange={handleChange}
-              placeholder="********"
-              style={{
-                width: "100%",
-                padding: 12,
-                borderRadius: 10,
-                border: "1px solid #ccc",
-              }}
-            />
-          </div>
-        )}
 
         {error && (
           <div
@@ -490,18 +276,12 @@ const Login = () => {
             cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          {loading
-            ? "Procesando..."
-            : mode === "login"
-              ? "Ingresar"
-              : "Registrarse"}
+          {loading ? "Procesando..." : "Ingresar"}
         </button>
       </form>
 
       <p style={{ marginTop: 18, textAlign: "center", color: "#666" }}>
-        {mode === "login"
-          ? "¿No tienes cuenta? Regístrate para poder acceder."
-          : "¿Ya tienes cuenta? Inicia sesión con tu correo"}
+        ¿No tienes cuenta? Solicitá tu cuenta para poder acceder.
         {/* : "¿Ya tienes cuenta? Inicia sesión con tu correo o Google."} */}
       </p>
     </div>

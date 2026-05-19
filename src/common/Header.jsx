@@ -64,7 +64,7 @@ const Header = () => {
   };
 
   const navLinks = [
-    { name: "Inicio", path: "/BackOffice/" },
+    { name: "Inicio", path: "#/home" },
     {
       name: "Choferes",
       subItems: [
