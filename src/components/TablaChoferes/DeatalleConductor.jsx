@@ -41,6 +41,7 @@ const DetalleConductor = () => {
   const isSmall = useMediaQuery(theme.breakpoints.down("md"));
   const [openModalEstado, setOpenModalEstado] = useState(false);
   const [observaciones, setObservaciones] = useState("");
+  const BASE_URL = axiosTaxi.defaults.baseURL;
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -63,13 +64,99 @@ const DetalleConductor = () => {
   };
   const obtenerDetalle = async () => {
     try {
-      const { data } = await axiosTaxi.get(`/conductores/obtenerDetalle/${id}`);
+      const { data } = await axiosTaxi.get(`/conductores/detalle/${id}`);
       setConductor(data?.result || null);
     } catch (error) {
       console.error("Error al obtener el detalle del conductor:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderArchivo = (img) => {
+    const imageUrl = `${BASE_URL}${img.ruta_archivo}`;
+    const extension = img.ruta_archivo.split(".").pop().toLowerCase();
+
+    // 🖼️ IMÁGENES
+    if (["jpg", "jpeg", "png", "webp"].includes(extension)) {
+      return (
+        <CardMedia
+          component="img"
+          image={imageUrl}
+          alt={img.tipo_imagen}
+          onClick={() => window.open(imageUrl, "_blank")}
+          sx={{
+            height: 200,
+            borderRadius: 3,
+            objectFit: "cover",
+            cursor: "pointer",
+            transition: "0.2s",
+            "&:hover": { transform: "scale(1.05)" },
+          }}
+        />
+      );
+    }
+
+    // 📄 PDF
+    if (extension === "pdf") {
+      return (
+        <Box
+          sx={{
+            height: 220,
+            borderRadius: 3,
+            overflow: "hidden", // 🔥 corta el scroll visual
+            position: "relative",
+            border: "1px solid #ddd",
+            cursor: "pointer",
+            transition: "0.2s",
+            "&:hover": { transform: "scale(1.05)" },
+          }}
+          onClick={() => window.open(imageUrl, "_blank")}
+        >
+          <iframe
+            src={`${imageUrl}#toolbar=0&navpanes=0&view=FitH&page=1`}
+            width="100%"
+            height="260px" // 🔥 más alto que el contenedor
+            style={{
+              border: "none",
+              transform: "scale(1.03)", // 🔥 corta el borde del scroll
+              transformOrigin: "top left",
+              pointerEvents: "none", // 🔒 sin interacción
+            }}
+            title="PDF Preview"
+          />
+        </Box>
+      );
+    }
+
+    // 📝 Word u otros
+    return (
+      <Box
+        sx={{
+          height: 200,
+          borderRadius: 3,
+          backgroundColor: "#f5f5f5",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
+          overflow: "hidden",
+          scroll: "none",
+          transition: "0.2s",
+          "&:hover": { transform: "scale(1.05)" },
+        }}
+      >
+        <Description sx={{ fontSize: 40, color: "#555" }} />
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => window.open(imageUrl, "_blank")}
+        >
+          Abrir archivo
+        </Button>
+      </Box>
+    );
   };
 
   useEffect(() => {
@@ -424,58 +511,24 @@ const DetalleConductor = () => {
               <Divider sx={{ mb: 2 }} />
 
               <Grid container spacing={3}>
-                {[
-                  { label: "Foto de Perfil", src: conductor?.foto_perfil },
-                  { label: "DNI Frente", src: conductor?.foto_dni_frente },
-                  { label: "DNI Dorso", src: conductor?.foto_dni_dorso },
-                  {
-                    label: "Tarjeta Verde",
-                    src: conductor?.foto_tarjeta_verde,
-                  },
-                  {
-                    label: "Seguro del Taxi",
-                    src: conductor?.foto_seguro_taxi,
-                  },
-                ].map((f, i) => (
-                  <Grid item xs={12} sm={6} md={4} key={i}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      mb={1}
-                      display="block"
-                    >
-                      {f.label}
-                    </Typography>
-                    {f.src ? (
-                      <CardMedia
-                        component="img"
-                        sx={{
-                          width: "100%",
-                          height: 200,
-                          borderRadius: 3,
-                          objectFit: "cover",
-                          boxShadow: "0px 2px 8px rgba(0,0,0,0.1)",
-                        }}
-                        image={f.src}
-                        alt={f.label}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: 200,
-                          borderRadius: 3,
-                          backgroundColor: "#f5f5f5",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
+                {conductor?.imagenes?.map((img, i) => {
+                  const imageUrl = `${BASE_URL}${img.ruta_archivo}`;
+
+                  return (
+                    <Grid item xs={12} sm={6} md={4} key={i}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        mb={1}
+                        display="block"
                       >
-                        <Typography color="text.secondary">Sin foto</Typography>
-                      </Box>
-                    )}
-                  </Grid>
-                ))}
+                        {img.tipo_imagen}
+                      </Typography>
+
+                      {renderArchivo(img)}
+                    </Grid>
+                  );
+                })}
 
                 {/* 🚗 Fotos del Vehículo */}
                 <Grid item xs={4}>
@@ -496,14 +549,17 @@ const DetalleConductor = () => {
                     }}
                   >
                     {[
-                      { label: "Frente", src: conductor?.foto_vehiculo_frente },
+                      {
+                        label: "Frente",
+                        src: `${BASE_URL}/${conductor?.vehiculo_frente}`,
+                      },
                       {
                         label: "Lado Derecho",
-                        src: conductor?.foto_vehiculo_derecho,
+                        src: `${BASE_URL}${conductor?.vehiculo_derecho}`,
                       },
                       {
                         label: "Lado Izquierdo",
-                        src: conductor?.foto_vehiculo_izquierdo,
+                        src: `${BASE_URL}/${conductor?.vehiculo_izquierdo}`,
                       },
                     ].map((f, i) => (
                       <Box key={i} sx={{ textAlign: "center" }}>

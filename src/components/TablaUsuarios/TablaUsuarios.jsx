@@ -250,7 +250,7 @@ const TablaUsuarios = () => {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Tooltip title="Editar rol del usuario" arrow>
+        <Tooltip title="Editar usuario" arrow>
           <IconButton
             color="primary"
             onClick={() => handleEditarRol(params.row)}

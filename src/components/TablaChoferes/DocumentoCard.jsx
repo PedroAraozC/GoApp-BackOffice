@@ -57,9 +57,27 @@ const DocumentoCard = ({
               }}
             />
           ) : (
-            <Box textAlign="center">
-              <Typography fontSize="3rem">📄</Typography>
-              <Typography variant="caption">PDF</Typography>
+            // 🔥 PREVIEW PDF SIN SCROLL
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              <iframe
+                src={`${data.preview}#toolbar=0&navpanes=0&view=FitH&page=1`}
+                width="100%"
+                height="300px"
+                style={{
+                  border: "none",
+                  transform: "scale(1.08)",
+                  transformOrigin: "top left",
+                  pointerEvents: "none",
+                }}
+                title="PDF Preview"
+              />
             </Box>
           )
         ) : (
@@ -88,11 +106,7 @@ const DocumentoCard = ({
                 : "text.secondary"
           }
         >
-          {data?.existente
-            ? "Guardado"
-            : data?.file
-              ? "Pendiente"
-              : ""}
+          {data?.existente ? "Guardado" : data?.file ? "Pendiente" : ""}
         </Typography>
 
         <Box display="flex" gap={1}>

@@ -11,19 +11,36 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Cargar sesión al iniciar (como SharedPreferences en Flutter)
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("usuario");
+useEffect(() => {
+  const storedToken = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("usuario");
 
-    if (storedToken && storedUser) {
+  if (!storedToken || !storedUser) {
+    setLoading(false);
+    return;
+  }
+
+  // Verificar token contra backend
+  axiosTaxi
+    .get("/usuarios/verifyToken", {
+      headers: {
+        Authorization: `Bearer ${storedToken}`,
+      },
+    })
+    .then((res) => {
       setToken(storedToken);
       setUsuario(JSON.parse(storedUser));
       connectSocket(JSON.parse(storedUser));
-    }
-
-    setLoading(false);
-  }, []);
+    })
+    .catch(() => {
+    localStorage.clear();
+    setToken(null);
+    setUsuario(null);
+  })
+    .finally(() => {
+      setLoading(false);
+    });
+}, []);
 
   const connectSocket = (user) => {
     if (!user) return;

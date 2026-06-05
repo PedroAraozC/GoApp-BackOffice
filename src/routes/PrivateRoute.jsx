@@ -27,6 +27,10 @@ const PrivateRoute = ({ children }) => {
       </div>
     );
   }
-  return token ? children : <Navigate to="/" replace />;
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 };
 export default PrivateRoute;

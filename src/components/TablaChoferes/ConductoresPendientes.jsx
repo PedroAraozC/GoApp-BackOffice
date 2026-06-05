@@ -81,6 +81,13 @@ const TablaValidacionConductores = () => {
 
   const columnas = [
     {
+      field: "id_conductor",
+      headerName: "ID",
+      width: 100,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
       field: "nombre_usuario",
       headerName: "Nombre del Chofer",
       flex: 1,
@@ -150,7 +157,7 @@ const TablaValidacionConductores = () => {
   ];
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{  width: "100%", minHeight: "100vh", p: 2 }}>
       <Box
         sx={{
           display: "flex",
@@ -165,7 +172,7 @@ const TablaValidacionConductores = () => {
         <Typography sx={{ color: "black" }}>Volver</Typography>
       </Box>
 
-      <Typography variant="h5" sx={{ mb: 2 }}>
+      <Typography variant="h4" sx={{ mb: 2,textAlign: "center" }}>
         Solicitudes de Habilitación de Choferes
       </Typography>
 

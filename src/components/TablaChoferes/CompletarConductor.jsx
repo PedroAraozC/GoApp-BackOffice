@@ -17,11 +17,19 @@ import axiosTaxi from "../../config/axiosTaxi.js";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import DocumentoCard from "./DocumentoCard.jsx";
 const baseUrl = import.meta.env.VITE_APP_RUTA;
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from "@mui/material";
 
 const CompletarConductor = () => {
   const { id_usuario } = useParams();
   const navigate = useNavigate();
-
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [imagenAEliminar, setImagenAEliminar] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [snackbar, setSnackbar] = useState(null);
@@ -35,7 +43,9 @@ const CompletarConductor = () => {
     dni_dorso: null,
     licencia: null,
     seguro: null,
-    vehiculo: null,
+    vehiculo_lado_der: null,
+    vehiculo_lado_izq: null,
+    vehiculo_frente: null,
   });
 
   const [form, setForm] = useState({
@@ -90,7 +100,7 @@ const CompletarConductor = () => {
 
     // Base pública donde servís imágenes
 
-    return `${baseUrl}imagenes${normalizada}`;
+    return `${baseUrl}${normalizada}`;
   };
 
   const cargarImagenes = async (idConductor) => {
@@ -246,13 +256,40 @@ const CompletarConductor = () => {
     }
   };
 
-  const eliminarImagen = (key) => {
-    setImagenes((prev) => ({
-      ...prev,
-      [key]: null,
-    }));
+  const solicitarEliminarImagen = (key) => {
+    if (!imagenes[key]) return;
+
+    setImagenAEliminar(key);
+    setOpenConfirm(true);
   };
 
+  const confirmarEliminarImagen = async () => {
+    if (!imagenAEliminar) return;
+
+    try {
+      await axiosTaxi.delete(
+        `/conductores/imagenes?id_conductor=${idConductor}&tipo_imagen=${imagenAEliminar}`,
+      );
+
+      setImagenes((prev) => ({
+        ...prev,
+        [imagenAEliminar]: null,
+      }));
+
+      setSnackbar({
+        type: "success",
+        message: "Archivo eliminado correctamente",
+      });
+    } catch (error) {
+      setSnackbar({
+        type: "error",
+        message: "Error al eliminar el archivo",
+      });
+    } finally {
+      setOpenConfirm(false);
+      setImagenAEliminar(null);
+    }
+  };
   const abrirPreview = (url) => {
     if (!url) return;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -475,7 +512,7 @@ const CompletarConductor = () => {
                   data={value}
                   disabled={!puedeSubirArchivos}
                   onUpload={(file) => handleFileChange(key, file)}
-                  onDelete={() => eliminarImagen(key)}
+                  onDelete={() => solicitarEliminarImagen(key)}
                   onPreview={abrirPreview}
                 />
               ))}
@@ -504,6 +541,25 @@ const CompletarConductor = () => {
           </Snackbar>
         </>
       )}
+  <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+    <DialogTitle>Confirmar eliminación</DialogTitle>
+    <DialogContent>
+      <DialogContentText>
+        ¿Estás seguro de que querés eliminar este archivo? Esta acción no se
+        puede deshacer.
+      </DialogContentText>
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={() => setOpenConfirm(false)}>Cancelar</Button>
+      <Button
+        onClick={confirmarEliminarImagen}
+        color="error"
+        variant="contained"
+      >
+        Eliminar
+      </Button>
+    </DialogActions>
+  </Dialog>;
     </Box>
   );
 };

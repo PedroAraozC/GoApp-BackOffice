@@ -699,7 +699,7 @@ const ModalAltaUsuarioStepper = ({ open, onClose, onSuccess }) => {
         return;
       }
 
-      await axiosTaxi.post("/usuarios/crearUsuario", {
+      await axiosTaxi.post("/usuarios/crearUsuarioWeb", {
         nombre_usuario: usuario.nombre,
         apellido_usuario: usuario.apellido,
         dni: usuario.dni,

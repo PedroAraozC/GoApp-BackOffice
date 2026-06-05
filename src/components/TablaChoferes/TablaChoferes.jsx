@@ -81,6 +81,13 @@ const TablaValidacionConductores = () => {
 
   const columnas = [
     {
+      field: "id_conductor",
+      headerName: "ID",
+      width: 100,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
       field: "nombre_usuario",
       headerName: "Nombre del Chofer",
       headerAlign: "center",
@@ -161,9 +168,7 @@ const TablaValidacionConductores = () => {
           </Tooltip>
           <Tooltip title="Agregar documentacion faltante" arrow>
             <IconButton
-              onClick={() =>
-                navigate(`/completar/${params.row.id_usuario}`)
-              }
+              onClick={() => navigate(`/completar/${params.row.id_usuario}`)}
               sx={{
                 color: "#000000",
                 "&:hover": {
